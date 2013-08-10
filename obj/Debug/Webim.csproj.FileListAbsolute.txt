@@ -1,0 +1,13 @@
+D:\Spb\Webim\bin\Webim.dll
+D:\Spb\Webim\bin\Webim.pdb
+D:\Spb\Webim\bin\System.Json.dll
+D:\Spb\Webim\bin\System.Net.Http.dll
+D:\Spb\Webim\bin\System.Net.Http.Formatting.dll
+D:\Spb\Webim\bin\System.Net.Http.WebRequest.dll
+D:\Spb\Webim\bin\System.Json.xml
+D:\Spb\Webim\bin\System.Net.Http.xml
+D:\Spb\Webim\bin\System.Net.Http.Formatting.xml
+D:\Spb\Webim\bin\System.Net.Http.WebRequest.xml
+D:\Spb\Webim\obj\Debug\ResolveAssemblyReference.cache
+D:\Spb\Webim\obj\Debug\Webim.dll
+D:\Spb\Webim\obj\Debug\Webim.pdb
