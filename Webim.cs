@@ -135,6 +135,55 @@ namespace Webim
 
     }
 
+	public class WebimGroup : WebimObject
+	{
+		private string id;
+		private string uri;
+		private string nick;
+		private int count;
+		
+		public WebimGroup(string id, string uri, string nick)
+		{
+			this.id = id;
+			this.uri = uri;
+			this.nick = nick;
+			this.count = 0;
+		}
+
+		public string Id
+		{
+			get { return id; }
+			set { this.id = value; }
+		}
+
+		public string Uri
+		{
+			get { return uri; }
+			set { this.uri = value; }
+		}
+
+		public string Nick
+		{
+			get { return nick; }
+			set { this.nick = value; }
+		}
+
+		public int Count
+		{
+			get { return count; }
+			set { this.count = value; }
+		}
+
+		public override void feed(Dictionary<string, string> data)
+		{
+			data["id"] = id;
+			data["uri"] = uri;
+			data["nick"] = nick;
+			data["count"] = count.toString();
+		}
+
+	}
+
     /*
      * Webim Message
      */
@@ -300,15 +349,16 @@ namespace Webim
                 JsonObject connInfo = new JsonObject();
                 connInfo.Add("ticket", Ticket);
                 connInfo.Add("domain", Domain);
-                string jsonpd = (string)respObj.GetValue("jsonpd");
+                string jsonpd = (string)respObj["jsonpd"];
                 connInfo.Add("server", jsonpd);
                 connInfo.Add("jsond", jsonpd);
+				connInfo.Add("websocket", (string)respObj["websocket"]),
 
                 JsonObject rtObj = new JsonObject();
                 rtObj.Add("success", true);
                 rtObj.Add("conn", connInfo);
-                rtObj.Add("buddies", respObj.GetValue("buddies"));
-                rtObj.Add("groups", respObj.GetValue("groups"));
+                rtObj.Add("buddies", respObj["buddies"]);
+                rtObj.Add("groups", respObj["groups"]);
                 rtObj.Add("server_time", 1000);// FIXME LATER
                 rtObj.Add("user", ep.Json());
                 return rtObj;
