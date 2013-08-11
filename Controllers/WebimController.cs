@@ -25,22 +25,13 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Online()
         {
-			//TODO: Get current uid
-			string uid = "1";
-            WebimClient client = webimService.CurrentClient(uid);
-			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis(uid);
-			Dictionary<string, WebimGroup> groups = webimService.GetGroups(uid);
+		    //当前用户登录
+            WebimClient client = webimService.CurrentClient();
+			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis();
+			Dictionary<string, WebimGroup> groups = webimService.GetGroups();
             //Forward Online to IM Server
             JsonObject respObj = client.Online(new List<string>(buddies.Keys), 
 											   new List<string>(groups.Keys));
-            //Return JsonObject
-            //{"success":true,
-            // "conn":{"ticket":"ed9cad089c309facf958|64",
-            //  "domain":"localhost",
-            //  "server":"http:\/\/localhost:8000\/v4\/packets",
-            //  "jsond":"http:\/\/localhost:8000\/v4\/packets"},
-            // "buddies":{"64":"online"},
-            // "groups":[],"server_time":1000,"user":""}
             Debug.WriteLine(respObj.ToString());
 
             bool success = (bool)respobj["success"];
@@ -68,8 +59,6 @@ namespace Spacebuilder.Webim.Controllers
 				WebimGroup group = groups[(string)o["name"]];
 			}
 
-			//{"success":true,"server_time":1370751451399,"connection":{"ticket":"b3ad3492abbd99a3cbcd|5","domain":"localhost","server":"http://localhost:8000/v4/packets","jsonpd":"http://localhost:8000/v4/packets"},"buddies":[],"groups":[],"user":{"uid":"5","id":"5","nick":"user5","pic_url":"","ur":"","show":"available","status":""}}
-
 			//{"success":true,
 			// "connection":{
 			// "ticket":"fcc493f7a7b17cfadbf4|admin",
@@ -81,7 +70,6 @@ namespace Spacebuilder.Webim.Controllers
 			// "server_time":1370751451399.4,
 			// "user":{"uid":"1","id":"admin","nick":"admin","pic_url":"pickurl","show":"available","url":"home.php?mod=space&uid=1","status":""},
 			// "new_messages":[]}
-
 			return Json(new
                 {success = true,
                  server_time = 1370751451399,//FIXME:
@@ -98,7 +86,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
 		public ActionResult Offline() 
 		{
-			WebimClient c = webimService.CurrentClient();
+			WebimClient c = webimService.CurrentClient(Request["ticket"]);
 			c.Offline();
 			return Json("ok");
 		}
@@ -106,8 +94,7 @@ namespace Spacebuilder.Webim.Controllers
         //POST: /Webim/Message
 		public ActionResult Message()
 		{
-            WebimClient c = webimService.CurrentClient();
-			c.Ticket = Request["ticket"];
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string type = Request["type"];
             string offline = Request["offline"];
             string to = Request["to"];
@@ -126,7 +113,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Presence()
         {
-            WebimClient c = webimService.CurrentClient();
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string show = Request["show"];
             string status = Request["status"];
             c.Publish(new WebimPresence(show, status));
@@ -137,7 +124,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Status()
         {
-            WebimClient c = webimService.CurrentClient();
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string to = Request["to"];
             string show = Request["show"];
 			string status = Request["status"];
@@ -150,7 +137,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Refresh()
         {
-            WebimClient c = webimService.CurrentClient();
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             c.Offline();
             return Json("ok");
         }
@@ -159,8 +146,6 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Setting()
         {
-			//TODO: currentUid
-			string uid = "1";
             string data = Request["data"];
 			webimService.updateSetting(data);
             return Json("ok");
@@ -170,19 +155,17 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpGet]
         public ActionResult History()
         {
-			string uid = "1";
             string id = Request["id"];
             string type = Request["type"];
-			IEnumerable<WebimHistory> histories = webimService.GetHistory(uid, id, type);
+			IEnumerable<WebimHistory> histories = webimService.GetHistory(id, type);
             return Json(histories, JsonRequestBehavior.AllowGet);
         }
 
         //POST: /Webim/ClearHistory
         public ActionResult ClearHistory()
         {
-			string uid = "1";
             string id = Request["id"];
-			webimService.clearHistory(uid, id);
+			webimService.clearHistory(id);
             return Json("ok");
 
         }
@@ -191,10 +174,9 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpGet]
         public ActionResult DownloadHistory()
         {
-			string uid = "1";
 			string id = Request["id"];
 			string type = Request["type"];
-			IEnumerable<WebimHistory> histories = webimService.GetHistory(uid, id, type);
+			IEnumerable<WebimHistory> histories = webimService.GetHistory(id, type);
             return View(histories);
         }
 
@@ -203,10 +185,9 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpGet]
         public ActionResult Members()
         {
-            WebimClient c = webimService.CurrentClient();
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string gid = Request["id"];
             JsonObject obj = c.Members(gid);
-			//TODO: OK?
             return Json(obj, JsonRequestBehavior.AllowGet);
 
         }
@@ -215,18 +196,18 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpPost]
         public ActionResult Join()
         {
-            WebimClient c = webimService.CurrentClient();
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string gid = Request["id"];
             JsonObject o = c.Join(gid);
-            //TODO: RETURN ROOM OBJECT
-            return Json(new {count = 1 });
+            return Json(o);
         }
 
+        //POST: /Webim/Leave
+		[HttpPost]
         public ActionResult Leave()
         {
-            WebimClient c = webimService.CurrentClient();
-            string gid = Request["id"];
-            c.Leave(gid);
+            WebimClient c = webimService.CurrentClient(Request["ticket"]);
+            c.Leave(Request["id"]);
             return Json("ok");
         }
 
@@ -234,8 +215,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpGet]
         public ActionResult Buddies()
         {
-			string uid = "1";
-			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis(uid);
+			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis();
             return Json(buddies.Values.ToArray(), JsonRequestBehavior.AllowGet);
         }
 

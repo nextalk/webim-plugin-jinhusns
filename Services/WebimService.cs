@@ -16,33 +16,46 @@ namespace Spacebuilder.Webim.Services
         private FollowService followService = new FollowService();
 		*/
 
-        public WebimClient CurrentClient(string uid) 
+        public WebimClient CurrentClient(string ticket="") 
         {
-            WebimEndpoint user = CurrentUser(uid);
-            return new WebimClient(user,
-                WebimConfig.DOMAIN,
-                WebimConfig.APIKEY,
-                WebimConfig.HOST,
-                WebimConfig.PORT);
+            WebimClient c = new WebimClient(
+				ThisEndpoint(),
+				WebimConfig.DOMAIN,
+				WebimConfig.APIKEY,
+				WebimConfig.HOST,
+				WebimConfig.PORT);
+			c.Ticket = ticket;
+			return c;
         }
 
-        public WebimEndpoint CurrentUser(string uid)
+        public WebimEndpoint ThisEndpoint()
         {
             //TODO: SHOULD read from UserService
-            WebimEndpoint user =  new WebimEndpoint(uid, "uid:" + uid, "user");
-            user.Show = "available";
-            user.Status = "Online";
-            return user;
+            IUser u = UserContext.CurrentUser;
+			string uid = "1"; //u.UserId;
+			string nick = "nick"; //u.NickName;
+            WebimEndpoint ep =  new WebimEndpoint(uid, "uid:" + uid, nick);
+            ep.Show = "available";
+            ep.Status = "Online";
+            return ep;
         }
 
-		public Dictionary<string, WebimEndpoint> GetBuddies(string uid) 
+		public Dictionary<string, WebimEndpoint> GetBuddies() 
 		{
-			return new Dictionary<string, WebimEndpoint>();
+			//stub
+			Dictionary<string, WebimEndpoint> data = new Dictionary<string, WebimEndpoint>();
+			WebimEndpoint ep = ThisEndpoint();
+			data[ep.Id] = ep;
+			return data;
 		}
 
-		public Dictionary<string, WebimGroup> GetGroups(string uid) 
+		public Dictionary<string, WebimGroup> GetGroups() 
 		{
-			return new Dictionary<string, WebimGroup>();
+			
+			//stub
+			Dictionary<string, WebimGroup> data = new Dictionary<string, WebimGroup>();
+			data["group1"] = new WebimGroup("group1", "group1");
+			return data;
 		}
 
 		//Groups
@@ -98,20 +111,24 @@ namespace Spacebuilder.Webim.Services
 
 		}
 
-		public void updateSetting(string uid, string data)
+		public void updateSetting(string data)
 		{
-
+			//IUser user = UserContext.CurrentUser;
+			//store in db	
 		}
 
 		//History
-		public IEnumerable<WebimHistory> GetHistory(string uid, string with, string type = "unicast")
+		public IEnumerable<WebimHistory> GetHistory(string with, string type = "unicast")
 		{
-
+			//IUser user = UserContext.CurrentUser;
+			string uid = "1"; 
 		}
 	
 		//TODO: DELETE FROM DB
-		public void ClearHistory(string uid, string with) 
+		public void ClearHistory(string with) 
 		{
+			//IUser user = UserContext.CurrentUser;
+			string uid = "1";
 			return;
 
 		}
