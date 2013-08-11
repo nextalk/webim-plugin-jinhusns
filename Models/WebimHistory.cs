@@ -1,12 +1,11 @@
-namespace Spacebuilder.Webim 
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace Spacebuilder.Webim
 {
-
-    [TableName("spb_webim_Histories")]
-	public class WebimHistory
-	{
-
-	}
-
-
-
+    public class History
+    {
+    }
 }
