@@ -179,7 +179,7 @@ namespace Webim
 			data["id"] = id;
 			data["uri"] = uri;
 			data["nick"] = nick;
-			data["count"] = count.toString();
+			data["count"] = ""+count;
 		}
 
 	}
@@ -277,6 +277,19 @@ namespace Webim
         }
     }
 
+    public class WebimHistory : WebimObject
+    {
+
+        public WebimHistory()
+        { 
+        }
+        
+        public override void feed(Dictionary<string, string> data)
+        {
+        }
+
+    }
+
     public class WebimException : System.Exception
     {
         private int code;
@@ -331,7 +344,6 @@ namespace Webim
 
         public JsonObject Online(List<string> buddies, List<string> groups)
         {
-
             Dictionary<string, string> data = NewData();
             data.Add("groups", this.ListJoin(",", groups));
             data.Add("buddies", this.ListJoin(",", buddies));
@@ -343,25 +355,9 @@ namespace Webim
             data.Add("show", ep.Show);
             try
             {
-                JsonObject respObj = HttpPost("/presences/online", data);
-                this.ticket = (string)respObj["ticket"];
-
-                JsonObject connInfo = new JsonObject();
-                connInfo.Add("ticket", Ticket);
-                connInfo.Add("domain", Domain);
-                string jsonpd = (string)respObj["jsonpd"];
-                connInfo.Add("server", jsonpd);
-                connInfo.Add("jsond", jsonpd);
-				connInfo.Add("websocket", (string)respObj["websocket"]),
-
-                JsonObject rtObj = new JsonObject();
-                rtObj.Add("success", true);
-                rtObj.Add("conn", connInfo);
-                rtObj.Add("buddies", respObj["buddies"]);
-                rtObj.Add("groups", respObj["groups"]);
-                rtObj.Add("server_time", 1000);// FIXME LATER
-                rtObj.Add("user", ep.Json());
-                return rtObj;
+                JsonObject json = HttpPost("/presences/online", data);
+                this.ticket = (string)json["ticket"];
+                return json;
             }
             catch (System.Exception e)
             {
@@ -568,6 +564,32 @@ namespace Webim
             foreach (string g in groups)
             {
                 if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(sep);
+                }
+                sb.Append(g);
+
+            }
+            return sb.ToString();
+        }
+
+        private string ApiUrl(string path)
+        {
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
+            }
+            return "http://" + host + ":" + port.ToString() + "/v4" + path;
+        }
+
+    }
+
+}
+     if (first)
                 {
                     first = false;
                 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Webim;
+using Spacebuilder.Webim.Models;
 
 namespace Spacebuilder.Webim.Services
 {
@@ -31,7 +32,7 @@ namespace Spacebuilder.Webim.Services
         public WebimEndpoint ThisEndpoint()
         {
             //TODO: SHOULD read from UserService
-            IUser u = UserContext.CurrentUser;
+            //IUser u = UserContext.CurrentUser;
 			string uid = "1"; //u.UserId;
 			string nick = "nick"; //u.NickName;
             WebimEndpoint ep =  new WebimEndpoint(uid, "uid:" + uid, nick);
@@ -54,25 +55,25 @@ namespace Spacebuilder.Webim.Services
 			
 			//stub
 			Dictionary<string, WebimGroup> data = new Dictionary<string, WebimGroup>();
-			data["group1"] = new WebimGroup("group1", "group1");
+			data["group1"] = new WebimGroup("group1", "group:1", "group1");
 			return data;
 		}
 
 		//Groups
 		public WebimGroup GetGroup(string uid, string gid)
 		{
-
+            return new WebimGroup("group1", "group:1", "group1");
 		}
 
 		public IEnumerable<WebimGroup> GetGroups(string uid) 
 		{
-
+            return new List<WebimGroup>();
 		}
 
 		//Offline
 		public IEnumerable<WebimMessage> GetOfflineMessages(string uid)	
 		{
-
+            return new List<WebimMessage>();
 		}
 
 		public void OfflineMessageToHistory(string uid)
@@ -80,14 +81,7 @@ namespace Spacebuilder.Webim.Services
 			
 		}
 
-		//Setting
-		public string GetSetting(string uid) 
-		{
-
-		}
-
-		
-		public void insertHistory(WebimMessage msg)
+        public void insertHistory(WebimMessage msg)
 		{
 			/*
 			$row = array(
@@ -108,7 +102,7 @@ namespace Spacebuilder.Webim.Services
 		//Setting
 		public string GetSetting(string uid) 
 		{
-
+            return "";
 		}
 
 		public void updateSetting(string data)
@@ -121,28 +115,31 @@ namespace Spacebuilder.Webim.Services
 		public IEnumerable<WebimHistory> GetHistory(string with, string type = "unicast")
 		{
 			//IUser user = UserContext.CurrentUser;
-			string uid = "1"; 
+			//string uid = "1";
+            return new List<WebimHistory>();
 		}
 	
 		//TODO: DELETE FROM DB
 		public void ClearHistory(string with) 
 		{
 			//IUser user = UserContext.CurrentUser;
-			string uid = "1";
+			//string uid = "1";
 			return;
 
 		}
 
 		//Notifications
-		public IEnumerable<WebimNotification> GetNotifications(string uid)
+		public IEnumerable<WebimNotification> GetNotifications()
 		{
-
+            //uid = "1";
+            return new List<WebimNotification>();
 		}
 
 		//Menu
-		public IEnumerable<WebimMenu> GetMenuList(string uid)
+		public IEnumerable<WebimMenu> GetMenuList()
 		{
-
+            //string uid = "1";
+            return new List<WebimMenu>();
 		}
 
     }

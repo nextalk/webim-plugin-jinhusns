@@ -5,6 +5,10 @@ using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Json;
+using Webim;
+using Spacebuilder.Webim.Models;
+using Spacebuilder.Webim.Services;
 
 namespace Spacebuilder.Webim.Controllers
 {
@@ -27,36 +31,46 @@ namespace Spacebuilder.Webim.Controllers
         {
 		    //当前用户登录
             WebimClient client = webimService.CurrentClient();
-			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis();
+			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddies();
 			Dictionary<string, WebimGroup> groups = webimService.GetGroups();
             //Forward Online to IM Server
-            JsonObject respObj = client.Online(new List<string>(buddies.Keys), 
+            JsonObject json = client.Online(new List<string>(buddies.Keys), 
 											   new List<string>(groups.Keys));
-            Debug.WriteLine(respObj.ToString());
+            Debug.WriteLine(json.ToString());
 
-            bool success = (bool)respobj["success"];
-            if (!isSuccess)
+            bool success = (bool)json["success"];
+            if (!success)
 			{
                 return Json(
 					new {success = false, error_msg = "IM Server is not found" },
                     JsonRequestBehavior.AllowGet
 				);
 			}
-			JsonObject conn = (JsonObject)obj["conn"];
-			client.Ticket = (string)conn["ticket"];
 
-			List<WebimEndpoint> onlineBuddies = new List<WebimEndpoint>();
-			foreach (JsonValue v in conn["buddies"])
+            Dictionary<string, string> conn = new Dictionary<string, string>();
+            
+            conn.Add("ticket", (string)json["ticket"]);
+            conn.Add("domain", client.Domain);
+            conn.Add("jsonpd", (string)json["jsonpd"]);
+            conn.Add("server", (string)json["jsonpd"]);
+            conn.Add("websocket", (string)json["websocket"]);
+
+            List<Dictionary<string, string>> onlineBuddies = new List<Dictionary<string, string>>();
+            foreach (JsonValue v in (JsonArray)json["buddies"])
 			{
 				JsonObject o = (JsonObject)v;
-				onlineBuddies.Add(buddies[(string)o["name"]]);
+                string uid = (string)o["name"];
+				onlineBuddies.Add(buddies[uid].Data());
 			}
 
-			List<WebimGroup> onlineGroups = new List<WebimGroup>();
-			foreach(JsonValue v in conn["groups"])
+            List<Dictionary<string, string>> onlineGroups = new List<Dictionary<string, string>>();
+            foreach (JsonValue v in (JsonArray)json["groups"])
 			{
 				JsonObject o = (JsonObject)v;
-				WebimGroup group = groups[(string)o["name"]];
+                string gid = (string)o["name"];
+				WebimGroup group = groups[gid];
+                group.Count = (int)o["total"];
+                onlineGroups.Add(group.Data());
 			}
 
 			//{"success":true,
@@ -77,9 +91,10 @@ namespace Spacebuilder.Webim.Controllers
                  buddies = onlineBuddies.ToArray(),
                  groups = onlineGroups.ToArray(),
                  rooms = onlineGroups.ToArray(),
-                 user = respObj["user"] 
+                 service_time = 0,
+                 user = client.Endpoint.Data()
                 }, JsonRequestBehavior.AllowGet);
-            }
+          
         }
 
         // POST: /Webim/Offline
@@ -165,7 +180,7 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult ClearHistory()
         {
             string id = Request["id"];
-			webimService.clearHistory(id);
+			webimService.ClearHistory(id);
             return Json("ok");
 
         }
@@ -215,7 +230,7 @@ namespace Spacebuilder.Webim.Controllers
 		[HttpGet]
         public ActionResult Buddies()
         {
-			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddeis();
+			Dictionary<string, WebimEndpoint> buddies = webimService.GetBuddies();
             return Json(buddies.Values.ToArray(), JsonRequestBehavior.AllowGet);
         }
 

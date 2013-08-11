@@ -74,6 +74,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\WebimMenu.cs" />
+    <Compile Include="Models\WebimNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\WebimService.cs" />
     <Compile Include="Webim.cs" />
@@ -557,9 +559,7 @@
     <Content Include="WebimUI\static\webim.dotnet.min.js" />
     <Content Include="WebimUI\webim.js" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
