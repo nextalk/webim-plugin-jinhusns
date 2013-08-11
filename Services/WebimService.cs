@@ -4,18 +4,21 @@ using System.Linq;
 using System.Web;
 using Webim;
 using Spacebuilder.Webim.Models;
+using Spacebuilder.Group
 
-namespace Spacebuilder.Webim.Services
+namespace Spacebuilder.Webim
 {
     public class WebimService
     {
-		/*
         private IUserService userService = DIContainer.Resolve<IUserService>();
 
         private GroupService groupService = new GroupService();
 
         private FollowService followService = new FollowService();
-		*/
+
+		IHistoryRepository historyRepository = new HistoryRepository();
+
+		ISettingRepository settingRepository = new SettingRepository();
 
         public WebimClient CurrentClient(string ticket="") 
         {
@@ -41,104 +44,100 @@ namespace Spacebuilder.Webim.Services
             return ep;
         }
 
-		public Dictionary<string, WebimEndpoint> GetBuddies() 
+		public IEnumerable<IUser> GetBuddies(long uid) 
 		{
-			//stub
-			Dictionary<string, WebimEndpoint> data = new Dictionary<string, WebimEndpoint>();
-			WebimEndpoint ep = ThisEndpoint();
-			data[ep.Id] = ep;
-			return data;
+			//TODO: PERFORMANCE ISSUES
+			PagingDataSet<long> ids = followService.GetFollowedIds(uid, null, null, 10000);
+			List<IUser> buddies = new List<IUser>();
+			for(long id in ids) 
+			{
+				if(followService.IsMutualFollowed(uid, id))
+				{
+					buddies.Add(userService.GetUser(id));
+				}
+
+			}
+			return buddies;
 		}
 
-		public Dictionary<string, WebimGroup> GetGroups() 
+		public IEnumerable<GroupEntity> GetGroups(long uid) 
 		{
-			
-			//stub
-			Dictionary<string, WebimGroup> data = new Dictionary<string, WebimGroup>();
-			data["group1"] = new WebimGroup("group1", "group:1", "group1");
-			return data;
+			//TODO: fix later
+		 	PagingDataSet<GroupEntity> groupService.GetMyJoinedGroups(long userId, 100, 0);
+            return new List<GroupEntity>();
 		}
 
 		//Groups
-		public WebimGroup GetGroup(string uid, string gid)
+		public GroupEntity GetGroup(string gid)
 		{
             return new WebimGroup("group1", "group:1", "group1");
 		}
 
-		public IEnumerable<WebimGroup> GetGroups(string uid) 
-		{
-            return new List<WebimGroup>();
-		}
-
 		//Offline
-		public IEnumerable<WebimMessage> GetOfflineMessages(string uid)	
+		public IEnumerable<HistoryEntity> GetOfflineMessages(int uid)	
 		{
-            return new List<WebimMessage>();
+			return historyRepository.GetOfflineMessages(uid);
 		}
 
-		public void OfflineMessageToHistory(string uid)
+		public void OfflineMessageToHistory(int uid)
 		{
-			
+			historyRepository.OfflineMessageToHistory(uid);
 		}
 
-        public void insertHistory(WebimMessage msg)
+        public void insertHistory(string from, string offline, WebimMessage msg)
 		{
-			/*
-			$row = array(
-				"from" => $uid,
-				"nick" => $nick,
-				"send" => $send,
-				"type" => $type,
-				"to" => $to,
-				"body" => $body,
-				"style" => $style,
-				"timestamp" => $timestamp,
-				"created_at" => date( 'Y-m-d H:i:s' ),
-			);
-			$this->_loadDao(self::HISTORY_DAO)->add($row);
-			*/
+			HistoryEntity entity = HistoryEntity.new();
+			entity.From = from;
+			entity.Send = offline;
+			entity.Nick = msg.Nick;
+			entity.Type = msg.Type;
+			entity.To = msg.To;
+			entity.Body = msg.Body;
+			entity.Style = msg.Style;
+			entity.Timestamp = msg.Timestamp;
+			historyRepository.insert(entity);
 		}
 
 		//Setting
 		public string GetSetting(string uid) 
 		{
-            return "";
+			IUser user = UserContext.CurrentUser;
+			return settingRepository.Get(user.UserId);
 		}
 
 		public void updateSetting(string data)
 		{
-			//IUser user = UserContext.CurrentUser;
-			//store in db	
+			IUser user = UserContext.CurrentUser;
+			settingRepository.Set(user.UserId, data);
 		}
 
 		//History
-		public IEnumerable<WebimHistory> GetHistory(string with, string type = "unicast")
+		public IEnumerable<WebimHistory> GetHistories(string with, string type = "unicast")
 		{
-			//IUser user = UserContext.CurrentUser;
-			//string uid = "1";
-            return new List<WebimHistory>();
+
+			IUser user = UserContext.CurrentUser;
+			return historyRepository.GetHistories(user.UserId, with, type);
 		}
 	
-		//TODO: DELETE FROM DB
-		public void ClearHistory(string with) 
+		public void ClearHistories(string with) 
 		{
-			//IUser user = UserContext.CurrentUser;
-			//string uid = "1";
-			return;
-
+			IUser user = UserContext.CurrentUser;
+			historyRepository.ClearHistories(user.UserId, with);
 		}
 
 		//Notifications
 		public IEnumerable<WebimNotification> GetNotifications()
 		{
-            //uid = "1";
+			//TODO: unimplemented
+			IUser user = UserContext.CurrentUser;
             return new List<WebimNotification>();
 		}
 
 		//Menu
 		public IEnumerable<WebimMenu> GetMenuList()
 		{
-            //string uid = "1";
+			//TODO: unimplemented
+			IUser user = UserContext.CurrentUser;
             return new List<WebimMenu>();
 		}
 

@@ -189,18 +189,26 @@ namespace Webim
      */
     public class WebimMessage : WebimObject
     {
+        private string type;
         private string to;
         private string body;
         private string style;
         private int timestamp;
 
-        public WebimMessage(string to, string body, string style, int timestamp)
+        public WebimMessage(string type, string to, string body, string style, int timestamp)
         {
+			this.type = type;
             this.to = to;
             this.body = body;
             this.style = style;
             this.timestamp = timestamp;
         }
+
+		public string Type
+		{
+            get { return type; }
+            set { this.type = value; }
+		}
 
         public string To
         {
@@ -228,6 +236,7 @@ namespace Webim
 
         public override void feed(Dictionary<string, string> data)
         {
+            data.Add("type", type);
             data.Add("to", to);
             data.Add("body", body);
             data.Add("style", style);

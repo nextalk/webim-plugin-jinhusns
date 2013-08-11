@@ -1,4 +1,4 @@
-﻿namespace Spacebuilder.Webim.Models
+﻿namespace Spacebuilder.Webim
 {
 
     public class WebimMenu

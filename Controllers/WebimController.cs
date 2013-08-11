@@ -109,6 +109,7 @@ namespace Spacebuilder.Webim.Controllers
         //POST: /Webim/Message
 		public ActionResult Message()
 		{
+			IUser user = UserContext.CurrentUser;
             WebimClient c = webimService.CurrentClient(Request["ticket"]);
             string type = Request["type"];
             string offline = Request["offline"];
@@ -117,10 +118,9 @@ namespace Spacebuilder.Webim.Controllers
             string style = Request["style"];
             //FIXME: unix timestamp
             int timestamp = 1928282;
-            //TODO: Insert into database
-            WebimMessage msg = new WebimMessage(to, body, style, timestamp);
+            WebimMessage msg = new WebimMessage(type, to, body, style, timestamp);
             c.Publish(msg);
-			webimService.insertHistory(msg);
+			webimService.insertHistory(user.UserId, offline, msg);
             return Json("ok");
 		}
 
@@ -172,7 +172,7 @@ namespace Spacebuilder.Webim.Controllers
         {
             string id = Request["id"];
             string type = Request["type"];
-			IEnumerable<WebimHistory> histories = webimService.GetHistory(id, type);
+			IEnumerable<HistoryEntity> histories = webimService.GetHistories(id, type);
             return Json(histories, JsonRequestBehavior.AllowGet);
         }
 
@@ -180,7 +180,7 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult ClearHistory()
         {
             string id = Request["id"];
-			webimService.ClearHistory(id);
+			webimService.ClearHistories(id);
             return Json("ok");
 
         }

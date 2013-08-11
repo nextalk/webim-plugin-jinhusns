@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spacebuilder.Webim.Models
+namespace Spacebuilder.Webim
 {
     public class WebimNotification
     {
