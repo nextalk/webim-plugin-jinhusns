@@ -22,9 +22,9 @@ namespace Spacebuilder.Webim
     public interface ISettingRepository : IRepository<SettingEntity>
     {
 
-		string Get(int uid);
+		string Get(long uid);
 
-		void Set(int uid, string data);
+		void Set(long uid, string data);
 
 	}
 

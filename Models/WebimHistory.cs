@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Spacebuilder.Common;
 using Tunynet.Common;
+using PetaPoco;
+using Tunynet;
 
 /* CREATE TABLE webim_histories (
  * 	`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -36,7 +37,7 @@ namespace Spacebuilder.Webim
 	[PrimaryKey("id", autoIncrement = true)]
     public class HistoryEntity : IEntity
     {
-		public static HistoryEntity new()
+		public static HistoryEntity New()
 		{
 			HistoryEntity entity = new HistoryEntity();
 			entity.CreatedAt = DateTime.UtcNow;
@@ -73,6 +74,23 @@ namespace Spacebuilder.Webim
 
 		#endregion
 
+
+        public object EntityId
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool IsDeletedInDatabase
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 
 }

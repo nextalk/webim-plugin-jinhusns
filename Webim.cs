@@ -141,6 +141,9 @@ namespace Webim
 		private string uri;
 		private string nick;
 		private int count;
+        private string url;
+        private string pic_url;
+        private int all_count;
 		
 		public WebimGroup(string id, string uri, string nick)
 		{
@@ -174,12 +177,34 @@ namespace Webim
 			set { this.count = value; }
 		}
 
+        public int AllCount
+        {
+            get { return all_count; }
+            set { this.all_count = value; }
+
+        }
+
+        public string Url
+        {
+            get { return url; }
+            set { this.url = value; }
+        }
+
+        public string PicUrl
+        {
+            get { return pic_url; }
+            set { this.pic_url = value; }
+        }
+
 		public override void feed(Dictionary<string, string> data)
 		{
 			data["id"] = id;
 			data["uri"] = uri;
 			data["nick"] = nick;
-			data["count"] = ""+count;
+            data["url"] = url;
+            data["pic_url"] = pic_url;
+			data["count"] = count.ToString();
+            data["all_count"] = all_count.ToString();
 		}
 
 	}
@@ -193,22 +218,30 @@ namespace Webim
         private string to;
         private string body;
         private string style;
-        private int timestamp;
+        private double timestamp;
+        private string nick;
 
-        public WebimMessage(string type, string to, string body, string style, int timestamp)
+        public WebimMessage(string type, string to, string nick, string body, string style, double timestamp)
         {
-			this.type = type;
+            this.type = type;
             this.to = to;
+            this.nick = nick;
             this.body = body;
             this.style = style;
             this.timestamp = timestamp;
         }
 
-		public string Type
-		{
+        public string Type
+        {
             get { return type; }
             set { this.type = value; }
-		}
+        }
+
+        public string Nick
+        {
+            get { return nick; }
+            set { this.nick = value; }
+        }
 
         public string To
         {
@@ -228,7 +261,7 @@ namespace Webim
             set { this.style = value; }
         }
 
-        public int Timestamp
+        public double Timestamp
         {
             get { return timestamp; }
             set { this.timestamp = value; }
@@ -238,6 +271,7 @@ namespace Webim
         {
             data.Add("type", type);
             data.Add("to", to);
+            data.Add("nick", nick);
             data.Add("body", body);
             data.Add("style", style);
             data.Add("timestamp", timestamp.ToString());
@@ -351,7 +385,7 @@ namespace Webim
             get { return domain; }
         }
 
-        public JsonObject Online(List<string> buddies, List<string> groups)
+        public JsonObject Online(IEnumerable<string> buddies, IEnumerable<string> groups)
         {
             Dictionary<string, string> data = NewData();
             data.Add("groups", this.ListJoin(",", groups));
@@ -446,8 +480,6 @@ namespace Webim
         public JsonObject Publish(WebimMessage message)
         {
             Dictionary<string, string> data = NewData();
-            data.Add("type", "unicast"); //TODO: FIXLATER
-            data.Add("nick", ep.Nick);
             message.feed(data);
             try
             {
@@ -566,11 +598,11 @@ namespace Webim
             return data;
         }
 
-        private string ListJoin(string sep, List<string> groups)
+        private string ListJoin(string sep, IEnumerable<string> list)
         {
             bool first = true;
             StringBuilder sb = new StringBuilder();
-            foreach (string g in groups)
+            foreach (string g in list)
             {
                 if (first)
                 {
@@ -598,29 +630,4 @@ namespace Webim
     }
 
 }
-     if (first)
-                {
-                    first = false;
-                }
-                else
-                {
-                    sb.Append(sep);
-                }
-                sb.Append(g);
-
-            }
-            return sb.ToString();
-        }
-
-        private string ApiUrl(string path)
-        {
-            if (!path.StartsWith("/"))
-            {
-                path = "/" + path;
-            }
-            return "http://" + host + ":" + port.ToString() + "/v4" + path;
-        }
-
-    }
-
-}
+     

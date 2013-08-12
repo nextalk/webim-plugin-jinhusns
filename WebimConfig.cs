@@ -9,7 +9,7 @@ namespace Webim
         public static string VERSION = "1.0";
         public static string DOMAIN = "localhost";
         public static string APIKEY = "public";
-        public static string HOST = "192.168.1.108";
+        public static string HOST = "192.168.0.145";
         public static int PORT = 8888;
     }
 

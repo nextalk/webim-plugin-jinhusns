@@ -13,7 +13,6 @@ using Tunynet;
 using Tunynet.Common;
 using Tunynet.Caching;
 
-
 namespace Spacebuilder.Webim
 {
     /// <summary>
@@ -22,22 +21,23 @@ namespace Spacebuilder.Webim
     public class SettingRepository : Repository<SettingEntity>, ISettingRepository
     {
 
-		public SettingRepository()
-		{
+        public SettingRepository()
+        {
+        }
 
-		}
+        public string Get(long uid)
+        {
+            string s = CreateDAO().FirstOrDefault<string>("select data from spb_Webim_Settings where uid = @0", uid);
+            if (s == null) s = "";
 
-		public string Get(int uid)
-		{
-			//"select data from spb_Webim_Settings where uid = ?;"
-			return "";
-		}
+            return s;
+        }
 
-		public void Set(int uid, string data)
-		{
-			//"update spb_Webim_Settings set data = ? where uid = ?;"
-		}
+        public void Set(long uid, string data)
+        {
+            CreateDAO().Execute("update spb_Webim_Settings set data =@0  where uid = @1", uid, data);
+        }
 
-	}
+    }
 
 }

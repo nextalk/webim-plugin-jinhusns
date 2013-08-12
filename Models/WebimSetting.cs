@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Spacebuilder.Common;
 using Tunynet.Common;
+using PetaPoco;
+using Tunynet;
+
 
 /*
  * CREATE TABLE webim_settings(
@@ -25,7 +27,7 @@ namespace Spacebuilder.Webim
 		public static SettingEntity New()
 		{
 			SettingEntity e = new SettingEntity();
-			e.data = "";
+			e.Data = "";
 			e.CreatedAt = DateTime.UtcNow;
 			e.UpdatedAt = DateTime.UtcNow;
 			return e;
@@ -41,5 +43,22 @@ namespace Spacebuilder.Webim
 
 		public DateTime UpdatedAt { get; set; }
 
+
+        public object EntityId
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool IsDeletedInDatabase
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
