@@ -28,14 +28,24 @@ namespace Spacebuilder.Webim
         public string Get(long uid)
         {
             string s = CreateDAO().FirstOrDefault<string>("select data from spb_Webim_Settings where uid = @0", uid);
-            if (s == null) s = "";
+            if (s == null) s = "{}";
 
             return s;
         }
 
         public void Set(long uid, string data)
         {
-            CreateDAO().Execute("update spb_Webim_Settings set data =@0  where uid = @1", uid, data);
+            if (Get(uid) == "{}")
+            {
+                CreateDAO().Execute("INSERT INTO spb_Webim_Settings(uid, data) values(@0, @1)", uid, data);
+                //SettingEntity setting = SettingEntity.New();
+                //setting.Uid = uid;
+                //setting.Data = data;
+                //Insert(setting);
+            }
+            else { 
+                CreateDAO().Execute("update spb_Webim_Settings set data =@0  where uid = @1", data, uid);
+            }
         }
 
     }

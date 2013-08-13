@@ -44,6 +44,8 @@ namespace Spacebuilder.Webim.Controllers
         [HttpGet]
         public ActionResult Run()
         {
+            IUser user = UserContext.CurrentUser;
+            string setting = webimService.GetSetting(user.UserId);
             string body = string.Format(@"var _IMC = {{
 	            production_name: 'dotnet',
 	            version: '1.0',
@@ -51,7 +53,7 @@ namespace Spacebuilder.Webim.Controllers
 	            uiPath: '{1}',
 	            is_login: true,
 	            user: '',
-	            setting: '',
+	            setting: {2},
 	            menu: '',
 	            disable_chatlink: '',
 	            enable_shortcut: '',
@@ -66,7 +68,7 @@ namespace Spacebuilder.Webim.Controllers
             _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.js?' + _IMC.version + '"" type=""text/javascript""></script>';
             document.write( _IMC.script );
 
-            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"));
+            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"), setting);
 
             return Content(body, "text/javascript");
         }
@@ -225,8 +227,9 @@ namespace Spacebuilder.Webim.Controllers
         [HttpPost]
         public ActionResult Setting()
         {
+            IUser user = UserContext.CurrentUser;
             string data = Request["data"];
-            webimService.updateSetting(data);
+            webimService.updateSetting(user.UserId, data);
             return Json("ok");
         }
 
@@ -262,7 +265,6 @@ namespace Spacebuilder.Webim.Controllers
             return View(histories);
         }
 
-
         //GET: /Webim/Members
         [HttpGet]
         public ActionResult Members()
@@ -270,6 +272,9 @@ namespace Spacebuilder.Webim.Controllers
             WebimClient c = CurrentClient(Request["ticket"]);
             string gid = Request["id"];
             JsonObject obj = c.Members(gid);
+            JsonArray members = (JsonArray)obj[gid];
+            return Content(members.ToString(), "text/json");
+            /*
             List<Dictionary<string,string>> list = new List<Dictionary<string,string>>();
             foreach (JsonObject m in (JsonArray)obj[gid])
             { 
@@ -279,7 +284,7 @@ namespace Spacebuilder.Webim.Controllers
                 list.Add(data);
             }
             return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
-
+            */
         }
 
         //POST: /Webim/Join
@@ -326,26 +331,6 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult Menus()
         {
             return Json(webimService.GetMenuList(), JsonRequestBehavior.AllowGet);
-        }
-
-        private List<string> BuddyIds(IEnumerable<IUser> buddies)
-        {
-            List<string> ids = new List<string>();
-            foreach (IUser user in buddies)
-            {
-                ids.Add(user.UserId.ToString());
-            }
-            return ids;
-        }
-
-        private List<string> GroupIds(IEnumerable<GroupEntity> groups)
-        {
-            List<string> ids = new List<string>();
-            foreach (GroupEntity e in groups)
-            {
-                ids.Add(e.GroupId.ToString());
-            }
-            return ids;
         }
 
         private double Timestamp()

@@ -7,16 +7,23 @@ using PetaPoco;
 using Tunynet;
 
 
-/*
- * CREATE TABLE webim_settings(
- *   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
- *   `uid` mediumint(8) unsigned NOT NULL,
- *   `data` text,
- *   `created_at` date DEFAULT NULL,
- *   `updated_at` date DEFAULT NULL,
- *   PRIMARY KEY (`id`)
- * )ENGINE=MyISAM;
- */
+//SQL Server脚本 
+//IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Settings]') AND type in (N'U'))
+//BEGIN
+//CREATE TABLE [dbo].[spb_Webim_Settings](
+//    [Id] [int] IDENTITY(1,1) NOT NULL,
+//    [Uid] [bigint] NOT NULL,
+//    [Data] [text] NULL,
+//    [CreatedAt] [date] NULL,
+//    [UpdatedAt] [date] NULL,
+// CONSTRAINT [PK_spb_Webim_Settings] PRIMARY KEY CLUSTERED 
+//(
+//    [Id] ASC
+//)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+//) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+//END
+
+
 namespace Spacebuilder.Webim
 {
 	[TableName("spb_Webim_Settings")]
@@ -35,7 +42,7 @@ namespace Spacebuilder.Webim
 
 		public long Id { get; set; }
 
-		public int Uid { get; set; }
+		public long Uid { get; set; }
 
 		public string Data { get; set; }
 
@@ -43,22 +50,9 @@ namespace Spacebuilder.Webim
 
 		public DateTime UpdatedAt { get; set; }
 
+        object IEntity.EntityId { get { return this.Id; } }
 
-        public object EntityId
-        {
-            get { throw new NotImplementedException(); }
-        }
+        bool IEntity.IsDeletedInDatabase { get; set; }
 
-        public bool IsDeletedInDatabase
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }

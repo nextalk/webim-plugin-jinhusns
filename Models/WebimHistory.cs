@@ -6,29 +6,30 @@ using Tunynet.Common;
 using PetaPoco;
 using Tunynet;
 
-/* CREATE TABLE webim_histories (
- * 	`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
- * 	`send` tinyint(1) DEFAULT NULL,
- * 	`type` varchar(20) DEFAULT NULL,
- * 	`to` varchar(50) NOT NULL,
- * 	`from` varchar(50) NOT NULL,
- * 	`nick` varchar(20) DEFAULT NULL COMMENT 'from nick',
- * 	`body` text,
- * 	`style` varchar(150) DEFAULT NULL,
- *	`timestamp` double DEFAULT NULL,
- *	`todel` tinyint(1) NOT NULL DEFAULT '0',
- *	`fromdel` tinyint(1) NOT NULL DEFAULT '0',
- *	`created_at` date DEFAULT NULL,
- *	`updated_at` date DEFAULT NULL,
- *	PRIMARY KEY (`id`),
- *	KEY `todel` (`todel`),
- *	KEY `fromdel` (`fromdel`),
- *	KEY `timestamp` (`timestamp`),
- *	KEY `to` (`to`),
- *	KEY `from` (`from`),
- *	KEY `send` (`send`)
- * ) ENGINE=MyISAM;
- */
+//SqlServer脚本
+//
+//IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Histories]') AND type in (N'U'))
+//BEGIN
+//CREATE TABLE [dbo].[spb_Webim_Histories](
+//    [Id] [int] IDENTITY(1,1) NOT NULL,
+//    [Send] [tinyint] NULL,
+//    [Type] [varchar](20) NULL,
+//    [ToUser] [varchar](50) NOT NULL,
+//    [FromUser] [varchar](50) NOT NULL,
+//    [Nick] [varchar](20) NULL,
+//    [Body] [text] NULL,
+//    [Style] [varchar](150) NULL,
+//    [Timestamp] [bigint] NULL,
+//    [ToDel] [tinyint] NOT NULL,
+//    [FromDel] [tinyint] NOT NULL,
+//    [CreatedAt] [date] NULL,
+//    [UpdatedAt] [date] NULL,
+// CONSTRAINT [PK_spb_Webim_Histories] PRIMARY KEY CLUSTERED 
+//(
+//    [Id] ASC
+//)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+//) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+//END
 
 namespace Spacebuilder.Webim
 {
@@ -52,9 +53,9 @@ namespace Spacebuilder.Webim
 
 		public string Type { get; set; }
 
-		public string To { get; set; }
+		public string ToUser { get; set; }
 
-		public string From { get; set; }
+		public string FromUser { get; set; }
 
 		public string Nick { get; set; }
 		
@@ -74,23 +75,10 @@ namespace Spacebuilder.Webim
 
 		#endregion
 
+        object IEntity.EntityId { get { return this.Id; } }
 
-        public object EntityId
-        {
-            get { throw new NotImplementedException(); }
-        }
+        bool IEntity.IsDeletedInDatabase { get; set; }
 
-        public bool IsDeletedInDatabase
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 
 }

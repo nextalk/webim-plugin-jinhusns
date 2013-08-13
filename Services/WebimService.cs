@@ -55,8 +55,8 @@ namespace Spacebuilder.Webim
             Dictionary<string, string> data = new Dictionary<string, string>();
             data["type"] = e.Type;
             data["send"] = e.Send == 1 ? "true" : "false";
-            data["to"] = e.To;
-            data["from"] = e.From;
+            data["to"] = e.ToUser;
+            data["from"] = e.FromUser;
             data["nick"] = e.Nick;
             data["body"] = e.Body;
             data["style"] = e.Style;
@@ -74,7 +74,7 @@ namespace Spacebuilder.Webim
 
         public IEnumerable<WebimGroup> GetGroups(long uid)
         {
-            PagingDataSet<GroupEntity> groups = groupService.GetMyJoinedGroups(uid, 10, 0);
+            PagingDataSet<GroupEntity> groups = groupService.GetMyJoinedGroups(uid, 100, 0);
             return (from g in groups select Mapping(g));
         }
 
@@ -98,11 +98,11 @@ namespace Spacebuilder.Webim
         public void InsertHistory(long uid, string offline, WebimMessage msg)
         {
             HistoryEntity entity = HistoryEntity.New();
-            entity.From = uid.ToString();
+            entity.FromUser = uid.ToString();
             entity.Send = (offline == "true" ? 0 : 1);
             entity.Nick = msg.Nick;
             entity.Type = msg.Type;
-            entity.To = msg.To;
+            entity.ToUser = msg.To;
             entity.Body = msg.Body;
             entity.Style = msg.Style;
             entity.Timestamp = msg.Timestamp;
@@ -110,16 +110,14 @@ namespace Spacebuilder.Webim
         }
 
         //Setting
-        public string GetSetting(string uid)
+        public string GetSetting(long uid)
         {
-            IUser user = UserContext.CurrentUser;
-            return settingRepository.Get(user.UserId);
+            return settingRepository.Get(uid);
         }
 
-        public void updateSetting(string data)
+        public void updateSetting(long uid, string data)
         {
-            IUser user = UserContext.CurrentUser;
-            settingRepository.Set(user.UserId, data);
+            settingRepository.Set(uid, data);
         }
 
         //History
