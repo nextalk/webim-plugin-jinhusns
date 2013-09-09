@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Json;
 
-namespace Webim
+namespace Spacebuilder.Webim
 {
     /*
      * Jsonable object interface

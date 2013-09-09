@@ -35,8 +35,8 @@ namespace Spacebuilder.Webim
 		{
 			SettingEntity e = new SettingEntity();
 			e.Data = "";
-			e.CreatedAt = DateTime.UtcNow;
-			e.UpdatedAt = DateTime.UtcNow;
+            e.CreatedAt = DateTime.Now;
+            e.UpdatedAt = DateTime.Now;
 			return e;
 		}
 

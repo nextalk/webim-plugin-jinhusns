@@ -41,8 +41,8 @@ namespace Spacebuilder.Webim
 		public static HistoryEntity New()
 		{
 			HistoryEntity entity = new HistoryEntity();
-			entity.CreatedAt = DateTime.UtcNow;
-			entity.UpdatedAt = DateTime.UtcNow;
+			entity.CreatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.Now;
 			return entity;
 		}
 
