@@ -149,7 +149,7 @@ namespace Spacebuilder.Webim.Controllers
                     buddies = buddyArray,
                     groups = groupArray,
                     rooms = groupArray,
-                    service_time = Timestamp(),
+                    server_time = Timestamp(),
                     user = client.Endpoint.Data()
                 }, JsonRequestBehavior.AllowGet);
 
@@ -335,7 +335,7 @@ namespace Spacebuilder.Webim.Controllers
 
         private double Timestamp()
         {
-            return (DateTime.UtcNow - new DateTime(2012, 10, 10, 14, 0, 0)).TotalSeconds;
+            return (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds;
         }
     }
 }
