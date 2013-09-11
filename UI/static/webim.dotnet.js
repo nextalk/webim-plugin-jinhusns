@@ -4038,7 +4038,7 @@ widget("chat",{
 			nick: options.user.nick,
 			//stype: '',
 			offline: info.presence != "online",
-			timestamp: (new Date()).getTime(),
+			timestamp: (new Date()).getTime() - date.timeSkew,
 			body: val
 		};
 		plugin.call(self, "send", [null, self.ui({msg: msg})]);
