@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Webim;
 using Spacebuilder.Group;
 using Tunynet.Common;
 using Spacebuilder.Common;

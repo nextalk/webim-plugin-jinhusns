@@ -6,12 +6,12 @@ using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Json;
-using Webim;
 using Spacebuilder.Webim;
 using Tunynet.Common;
 using Spacebuilder.Common;
 using Spacebuilder.Group;
 using Tunynet.Utilities;
+using System.Configuration;
 
 namespace Spacebuilder.Webim.Controllers
 {
@@ -32,10 +32,10 @@ namespace Spacebuilder.Webim.Controllers
         {
             WebimClient c = new WebimClient(
                 CurrentEndpoint(),
-                WebimConfig.DOMAIN,
-                WebimConfig.APIKEY,
-                WebimConfig.HOST,
-                WebimConfig.PORT);
+                WebimConfig.Instance().Domain,
+                WebimConfig.Instance().APIkey,
+                WebimConfig.Instance().Host,
+                WebimConfig.Instance().Port);
             c.Ticket = ticket;
             return c;
         }
@@ -44,6 +44,10 @@ namespace Spacebuilder.Webim.Controllers
         [HttpGet]
         public ActionResult Run()
         {
+            int iisVersion = 0;
+            if (!int.TryParse(ConfigurationManager.AppSettings["IISVersion"], out iisVersion))
+                iisVersion = 7;
+            bool aspx = iisVersion < 7;
             IUser user = UserContext.CurrentUser;
             string setting = webimService.GetSetting(user.UserId);
             string body = string.Format(@"var _IMC = {{
@@ -60,7 +64,7 @@ namespace Spacebuilder.Webim.Controllers
 	            disable_menu: 'true',
 	            theme: 'base',
 	            local: 'zh-CN',
-                aspx: true,
+                aspx: {3},
 	            min: """" //window.location.href.indexOf(""webim_debug"") != -1 ? """" : "".min""
             }};
             
@@ -68,7 +72,7 @@ namespace Spacebuilder.Webim.Controllers
             _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.js?' + _IMC.version + '"" type=""text/javascript""></script>';
             document.write( _IMC.script );
 
-            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"), setting);
+            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"), setting, aspx.ToString().ToLower());
 
             return Content(body, "text/javascript");
         }
@@ -79,6 +83,12 @@ namespace Spacebuilder.Webim.Controllers
         {
             //当前用户登录
             IUser user = UserContext.CurrentUser;
+            if (user == null)
+                return Json(
+                    new { success = false, error_msg = "尚未登录" },
+                    JsonRequestBehavior.AllowGet
+                );
+
             IEnumerable<WebimEndpoint> buddies = webimService.GetBuddies(user.UserId);
             IEnumerable<WebimGroup> groups = webimService.GetGroups(user.UserId);
             //Forward Online to IM Server
@@ -335,7 +345,7 @@ namespace Spacebuilder.Webim.Controllers
 
         private double Timestamp()
         {
-            return (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds;
+            return (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMilliseconds;
         }
     }
 }
