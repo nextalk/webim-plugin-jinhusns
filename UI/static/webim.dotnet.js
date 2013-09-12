@@ -1198,12 +1198,12 @@ extend(webim.prototype, objectExtend,{
 		history.option("userInfo", data.user);
 		var ids = [];
 		each(data.buddies, function(n, v){
-			history.init("unicast", v.id, v.history);
+			history.init("chat", v.id, v.history);
 		});
 		buddy.handle(data.buddies);
 		//rooms
 		each(data.rooms, function(n, v){
-			history.init("multicast", v.id, v.history);
+			history.init("grpchat", v.id, v.history);
 		});
 		//blocked rooms
 		var b = self.setting.get("blocked_rooms"), roomData = data.rooms;
@@ -1250,9 +1250,9 @@ extend(webim.prototype, objectExtend,{
 			for(var i = 0; i < l; i++){
 				v = data[i];
 				type = v["type"];
-				id = type == "unicast" ? (v.to == uid ? v.from : v.to) : v.to;
+				id = type == "chat" ? (v.to == uid ? v.from : v.to) : v.to;
 				v["id"] = id;
-				if(type == "unicast" && !v["new"]){
+				if(type == "chat" && !v["new"]){
 					var msg = {id: id, presence: "online"};
 					//update nick.
 					if(v.nick)msg.nick = v.nick;
@@ -1873,20 +1873,20 @@ model("buddy", {
 	});
 })();
 /*
-history // 消息历史记录 Support unicast and multicast
+history // 消息历史记录 Support chat and grpchat
 attributes：
 data 所有信息 readonly 
 methods:
-unicast(id) //Get
-multicast(id) //Get
+chat(id) //Get
+grpchat(id) //Get
 load(type, id)
 clear(type, id)
 init(type, id, data)
 handle(data) //handle data and distribute events
 
 events:
-unicast //id,data
-multicast //id,data
+chat //id,data
+grpchat //id,data
 clear //type, id
 */
 
@@ -1896,8 +1896,8 @@ model("history",{
 	_init:function(){
 		var self = this;
 		self.data = self.data || {};
-		self.data.unicast = self.data.unicast || {};
-		self.data.multicast = self.data.multicast || {};
+		self.data.chat = self.data.chat || {};
+		self.data.grpchat = self.data.grpchat || {};
 		if(self.options.jsonp)
 			self.request = jsonp;
 		else
@@ -1906,14 +1906,14 @@ model("history",{
 	//get: function(type, id){
 	//	return this.data[type][id];
 	//},
-	unicast: function(id){
-		return this.data["unicast"][id];
+	chat: function(id){
+		return this.data["chat"][id];
 	},
-	multicast: function(id){
-		return this.data["multicast"][id];
+	grpchat: function(id){
+		return this.data["grpchat"][id];
 	},
 	handle:function(addData){
-		var self = this, data = self.data, cache = {"unicast": {}, "multicast": {}};
+		var self = this, data = self.data, cache = {"chat": {}, "grpchat": {}};
 		addData = makeArray(addData);
 		var l = addData.length , v, id, userId = self.options.userInfo.id;
 		if(!l)return;
@@ -1921,7 +1921,7 @@ model("history",{
 			//for(var i in addData){
 			v = addData[i];
 			type = v.type;
-			id = type == "unicast" ? (v.to == userId ? v.from : v.to) : v.to;
+			id = type == "chat" ? (v.to == userId ? v.from : v.to) : v.to;
 			if(id && type){
 				cache[type][id] = cache[type][id] || [];
 				cache[type][id].push(v);
@@ -2575,7 +2575,7 @@ extend(webimUI.prototype, objectExtend, {
 				c = layout.chat(type, id);
 				c && c.status("");//clear status
 				if(!c){	
-					if (d.type === "unicast"){
+					if (d.type === "chat"){
 						self.addChat(type, id, null, null, d.nick);
 					}else{
 						self.addChat(type, id);  
@@ -2609,15 +2609,15 @@ extend(webimUI.prototype, objectExtend, {
 			});
 		});
 		//for test
-		history.bind("unicast", function( id, data){
-			var c = layout.chat("unicast", id), count = "+" + data.length;
+		history.bind("chat", function( id, data){
+			var c = layout.chat("chat", id), count = "+" + data.length;
 			if(c){
 				c.history.add(data);
 			}
 			//(c ? c.history.add(data) : im.addChat(id));
 		});
-		history.bind("multicast", function(id, data){
-			var c = layout.chat("multicast", id), count = "+" + data.length;
+		history.bind("grpchat", function(id, data){
+			var c = layout.chat("grpchat", id), count = "+" + data.length;
 			if(c){
 				c.history.add(data);
 			}
@@ -2659,16 +2659,16 @@ extend(webimUI.prototype, objectExtend, {
 		if(layout.chat(type, id))return;
 		if(type == "room"){
 			chatOptions = extend({}, options.roomChatOptions, chatOptions);
-			var h = history.multicast(id), info = room.get(id), _info = info || {id:id, nick: nick || id};
+			var h = history.grpchat(id), info = room.get(id), _info = info || {id:id, nick: nick || id};
 			_info.presence = "online";
-			layout.addChat(type, _info, extend({history: h, block: true, emot:true, clearHistory: false, member: true, msgType: "multicast"}, chatOptions), winOptions);
-			if(!h) history.load("multicast", id);
+			layout.addChat(type, _info, extend({history: h, block: true, emot:true, clearHistory: false, member: true, msgType: "grpchat"}, chatOptions), winOptions);
+			if(!h) history.load("grpchat", id);
 			var chat = layout.chat(type, id);
 			chat.bind("sendMsg", function(msg){
 				im.sendMsg(msg);
 				history.handle(msg);
 			}).bind("downloadHistory", function(info){
-				history.download("multicast", info.id);
+				history.download("grpchat", info.id);
 			}).bind("select", function(info){
 				buddy.presence(info);//online
 				buddy.complete();//Load info.
@@ -2691,20 +2691,20 @@ extend(webimUI.prototype, objectExtend, {
 
 		}else{
 			chatOptions = extend({}, options.buddyChatOptions, chatOptions);
-			var h = history.unicast(id), info = buddy.get(id);
+			var h = history.chat(id), info = buddy.get(id);
 			var _info = info || {id:id, nick: nick || id};
-			layout.addChat(type, _info, extend({history: h, block: false, emot:true, clearHistory: true, member: false, msgType: "unicast"}, chatOptions), winOptions);
+			layout.addChat(type, _info, extend({history: h, block: false, emot:true, clearHistory: true, member: false, msgType: "chat"}, chatOptions), winOptions);
 			if(!info) buddy.update(id);
-			if(!h) history.load("unicast", id);
+			if(!h) history.load("chat", id);
 			layout.chat(type, id).bind("sendMsg", function(msg){
 				im.sendMsg(msg);
 				history.handle(msg);
 			}).bind("sendStatus", function(msg){
 				im.sendStatus(msg);
 			}).bind("clearHistory", function(info){
-				history.clear("unicast", info.id);
+				history.clear("chat", info.id);
 			}).bind("downloadHistory", function(info){
-				history.download("unicast", info.id);
+				history.download("chat", info.id);
 			});
 		}
 	},
@@ -2840,7 +2840,7 @@ extend(widget.prototype, {
 	}
 });
 function _tr_type(type){
-	return type == "b" || type == "buddy" || type == "unicast" ? "buddy" : "room";
+	return type == "b" || type == "buddy" || type == "chat" ? "buddy" : "room";
 }
 function app(name, events){
 	webimUI.apps[name] = events || {};
@@ -3649,7 +3649,7 @@ function windowWidth(){
 	return document.compatMode === "CSS1Compat" && document.documentElement.clientWidth || document.body.clientWidth;
 }
 function _id_with_type(type, id){
-	return id ? (type == "b" || type == "buddy" || type == "unicast" ? ("b_" + id) : ("r_" + id)) : type;
+	return id ? (type == "b" || type == "buddy" || type == "chat" ? ("b_" + id) : ("r_" + id)) : type;
 }
 //
 /* ui.history:
