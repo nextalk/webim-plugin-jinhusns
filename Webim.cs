@@ -591,7 +591,7 @@ namespace Spacebuilder.Webim
         private Dictionary<string, string> NewData()
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            data.Add("version", "v4");
+            data.Add("version", "v5");
             data.Add("domain", Domain);
             data.Add("apikey", apikey);
             data.Add("ticket", Ticket);
@@ -624,7 +624,7 @@ namespace Spacebuilder.Webim
             {
                 path = "/" + path;
             }
-            return "http://" + host + ":" + port.ToString() + "/v4" + path;
+            return "http://" + host + ":" + port.ToString() + "/v5" + path;
         }
 
     }
