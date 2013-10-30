@@ -92,7 +92,18 @@ webim.ui.i18n.store('zh-CN',{
 	"password": "\u5bc6\u7801",
 	"question": "\u95ee\u9898",
 	"answer": "\u7b54\u6848",
-	"login": "\u767b\u5f55"
+	"login": "\u767b\u5f55",
+	"upload": "\u4e0a\u4f20",
+	"discussion": "\u8ba8\u8bba\u7ec4",
+	"discussion name": "\u8ba8\u8bba\u7ec4\u540d\u79f0",
+	"create discussion": "\u521b\u5efa\u8ba8\u8bba\u7ec4",
+	"select discussion buddies": "\u9009\u62e9\u52a0\u5165\u8ba8\u8bba\u7ec4\u7684\u597d\u53cb",
+	"confirm": "\u786e\u5b9a",
+	"cancel": "\u53d6\u6d88",
+	"invite": "\u9080\u8bf7",
+	"visitor":"\u8bbf\u5ba2",
+	"manager":"\u7ba1\u7406\u5458",
+	"exit": "\u9000\u51fa"
 });
 
 webim.ui.i18n.store('zh-CN',{
