@@ -120,7 +120,7 @@ namespace Spacebuilder.Webim
         }
 
         //History
-        public IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type = "unicast")
+        public IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type = "chat")
         {
             return historyRepository.GetHistories(uid, with, type);
         }

@@ -59,6 +59,8 @@ namespace Spacebuilder.Webim.Controllers
 	            user: '',
 	            setting: {2},
 	            menu: '',
+				disable_room: false,
+				disable_noti: false,
 	            disable_chatlink: '',
 	            enable_shortcut: '',
 	            disable_menu: 'true',

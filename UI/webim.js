@@ -3,28 +3,23 @@
     var path = _IMC.path;
     var aspx = _IMC.aspx ? ".aspx" : "";
     webim.extend(webim.setting.defaults.data, _IMC.setting);
-    var webim = window.webim;
-    webim.defaults.urls = {
+	webim.route({
         online: path + "Online" + aspx,
         offline: path + "Offline" + aspx,
         message: path + "Message" + aspx,
         presence: path + "Presence" + aspx,
-        refresh: path + "Refresh" + aspx,
-        status: path + "Status" + aspx
-    };
-    webim.setting.defaults.url = path + "Setting" + aspx;
-    webim.history.defaults.urls = {
-        load: path + "History" + aspx,
+        deactivate: path + "Refresh" + aspx,
+        status: path + "Status" + aspx,
+		setting: path + "Setting" + aspx,
+		history: path + "History" + aspx,
         clear: path + "ClearHistory" + aspx,
-        download: path + "DownloadHistory" + aspx
-    };
-    webim.room.defaults.urls = {
-        member: path + "Members" + aspx,
+        download: path + "DownloadHistory" + aspx,
+        members: path + "Members" + aspx,
         join: path + "Join" + aspx,
-        leave: path + "Leave" + aspx
-    };
-    webim.buddy.defaults.url = path + "Buddies" + aspx;
-    webim.notification.defaults.url = path + "Notifications" + aspx;
+        leave: path + "Leave" + aspx,
+		buddies: path + "Buddies" + aspx,
+		notifications: path + "Notifications" + aspx
+	});
 
     webim.ui.emot.init({ "dir": _IMC.uiPath + "static/images/emot/default" });
     var soundUrls = {
@@ -35,19 +30,27 @@
         imOptions: {
             jsonp: _IMC.jsonp
         },
-        soundUrls: soundUrls
+        soundUrls: soundUrls,
+		buddyChatOptions: {
+			upload: _IMC.upload
+		},
+		roomChatOptions: {
+			upload: _IMC.upload
+		}
     }), im = ui.im;
 
-    if (_IMC.user) im.user(_IMC.user);
+	if( _IMC.user ) im.setUser( _IMC.user );
     //if( _IMC.menu ) ui.addApp("menu", { "data": _IMC.menu } );
     if (_IMC.enable_shortcut) ui.layout.addShortcut(_IMC.menu);
 
     ui.addApp("buddy", {
+		showUnavailable: _IMC.showUnavailable,
         is_login: _IMC['is_login'],
+		disable_login: true,
         loginOptions: _IMC['login_options']
     });
-    ui.addApp("room");
-    ui.addApp("notification");
+	if( !_IMC.disable_room )ui.addApp("room", { discussion: true });
+	if( !_IMC.disable_noti )ui.addApp("notification");
     ui.addApp("setting", { "data": webim.setting.defaults.data });
     if (!_IMC.disable_chatlink) ui.addApp("chatlink", {
         space_href: [/mod=space&uid=(\d+)/i, /space\-uid\-(\d+)\.html$/i],

@@ -21,7 +21,7 @@ namespace Spacebuilder.Webim
     /// </summary>
     public interface IHistoryRepository : IRepository<HistoryEntity>
     {
-		IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type="unicast", int limit = 30);
+		IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type="chat", int limit = 30);
 		void ClearHistories(long uid, string with);
 
 		IEnumerable<HistoryEntity> GetOfflineMessages(long uid, int limit = 50);
