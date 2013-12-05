@@ -17,6 +17,12 @@ NexTalk为jinhusns.com定制开发的Webim应用，支持JinhuSNS社区网站访
 
 下载Webim-for-JinhuSNS4-20131205.zip安装包并解压。
 
+下载地址:
+
+	http://nextalk.im/static/plugins/jinhusns/Webim-for-JinhuSNS4-20131205.zip
+
+	https://github.com/webim/webim-plugin-jinhusns/blob/master/Webim-for-JinhuSNS4-20131205.zip
+
 安装(Install)
 =============
 
