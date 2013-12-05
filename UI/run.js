@@ -1,6 +1,6 @@
 var _IMC = {
 	production_name: 'jinhusns',
-	version: '5.1',
+	version: '1.0',
 	path: '/spb4/Applications/Webim/',
 	uiPath: '/spb4/Applications/Webim/UI/',
 	is_login: true,
@@ -14,6 +14,8 @@ var _IMC = {
 	enable_menu: 'false',
 	show_unavailable: false,
 	theme: 'base',
+	emot: 'default',
+	opacity: 80,
 	local: 'zh-CN',
 	min: "" //window.location.href.indexOf("webim_debug") != -1 ? "" : ".min"
 };
