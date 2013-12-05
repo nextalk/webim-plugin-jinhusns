@@ -4,6 +4,14 @@
 
 NexTalk为jinhusns.com定制开发的Webim应用，支持JinhuSNS社区网站访客、用户与管理员间的即时聊天。
 
+依赖(Depends)
+=============
+
+	packages/
+		System.Json.4.0.20118.13260/
+		System.Net.Http.2.0.20118.13260/
+		System.Net.Http.Formatting.4.0.20118.13260/
+
 
 安装(Install)
 =============
