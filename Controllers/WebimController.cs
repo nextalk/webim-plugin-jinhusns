@@ -51,7 +51,7 @@ namespace Spacebuilder.Webim.Controllers
             IUser user = UserContext.CurrentUser;
             string setting = webimService.GetSetting(user.UserId);
             string body = string.Format(@"var _IMC = {{
-	            production_name: 'dotnet',
+	            production_name: 'jinhusns',
 	            version: '1.0',
 	            path: '{0}',
 	            uiPath: '{1}',
@@ -59,13 +59,15 @@ namespace Spacebuilder.Webim.Controllers
 	            user: '',
 	            setting: {2},
 	            menu: '',
-				disable_room: false,
-				disable_noti: false,
-	            disable_chatlink: '',
+				enable_room: true,
+				enable_noti: false,
+	            enable_chatlink: '',
 	            enable_shortcut: '',
-	            disable_menu: 'true',
+	            enable_menu: 'false',
 	            theme: 'base',
 	            local: 'zh-CN',
+				emot: 'default',
+				opacity: 80,
                 aspx: {3},
 	            min: """" //window.location.href.indexOf(""webim_debug"") != -1 ? """" : "".min""
             }};
