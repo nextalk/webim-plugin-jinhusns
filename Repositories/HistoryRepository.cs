@@ -48,7 +48,7 @@ namespace Spacebuilder.Webim
                     .Where("send = 1");
             }
             sql.OrderBy("timestamp DESC");
-            var list = CreateDAO().FetchTopPrimaryKeys<HistoryEntity>(limit, sql).Select(n => Convert.ToInt64(n));
+            var list = CreateDAO().FetchTopPrimaryKeys<HistoryEntity>(limit, sql).Select(n => Convert.ToInt64(n)).Reverse();
             return PopulateEntitiesByEntityIds(list);
         }
 
@@ -69,7 +69,7 @@ namespace Spacebuilder.Webim
                 .Where("touser = @0", uid.ToString())
                 .Where("send != 1")
                 .OrderBy("timestamp DESC");
-            var list = CreateDAO().FetchTopPrimaryKeys<HistoryEntity>(limit, sql).Select(n => Convert.ToInt64(n));
+            var list = CreateDAO().FetchTopPrimaryKeys<HistoryEntity>(limit, sql).Select(n => Convert.ToInt64(n)).Reverse();
             return PopulateEntitiesByEntityIds(list);
         }
 
