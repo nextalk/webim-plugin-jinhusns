@@ -5,8 +5,8 @@
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Wed Oct 30 21:53:22 2013 +0800
- * Commit: 8ac5aee356d344635d94d0da54603a8e0b9585db
+ * Date: Tue Dec 3 21:38:16 2013 +0800
+ * Commit: 3e53b8e7e546abe9f3a4d3efa7566f61a2568337
  */
 
 body {
@@ -513,7 +513,7 @@ a .webim-icon, a .ui-icon{
 
 
 .webim-layout .webim-buddy-window .webim-window-tab{
-        width: 12em;
+        width: 13.6em;
 }
 .webim-layout .webim-buddy-window .webim-window-tab h4{
 		margin-right: 0;
