@@ -1,8 +1,8 @@
 
-Webim for JinhuSNS
-=========================
+简介
+====
 
-NexTalk为jinhusns.com定制开发的WebIM应用，支持JinhuSNS社区网站访客、用户与管理员间的即时聊天。
+NexTalk为jinhusns.com定制开发的Webim应用，支持JinhuSNS社区网站访客、用户与管理员间的即时聊天。
 
 
 安装(Install)
@@ -13,7 +13,9 @@ NexTalk为jinhusns.com定制开发的WebIM应用，支持JinhuSNS社区网站访
 2. 初始化数据库: 在SqlServer中，执行SQL脚本文件Web\Applications\Webim\Setup\Install\SqlServer\01_Install_Webim_Schema.sql
 
 3. 嵌入WebIM页面， 在Web/Themes下找到Footer文件，根据不同的IIS版本选择需要追加的代码：
+
      IIS7： @Html.LinkScript("~/Webim/Run") 
+
      IIS6： @Html.LinkScript("~/Webim/Run.aspx")
 
 
@@ -43,7 +45,7 @@ NexTalk为jinhusns.com定制开发的WebIM应用，支持JinhuSNS社区网站访
 版权(License)
 =============
 
-Webim应用版权为NexTalk.IM、JinhuSNS.com共有.
+Webim应用版权归NexTalk.IM、JinhuSNS.com共有.
 
 
 联系(Contact)
@@ -51,3 +53,4 @@ Webim应用版权为NexTalk.IM、JinhuSNS.com共有.
 
 http://nextalk.im
 
+http://jinhusns.com
