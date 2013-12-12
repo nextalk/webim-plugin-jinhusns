@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.Http;
+using System.Net;
+using System.IO;
 using System.Json;
 
 namespace Spacebuilder.Webim
@@ -560,11 +561,22 @@ namespace Spacebuilder.Webim
         private JsonObject HttpGet(string path, Dictionary<string, string> parameters)
         {
             String url = this.ApiUrl(path);
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = client.GetAsync(url + "?" + UrlEncode(parameters)).Result;
-            response.EnsureSuccessStatusCode();
-            string content = response.Content.ReadAsStringAsync().Result;
-            return (JsonObject)JsonObject.Parse(content);
+           
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url + "?" + UrlEncode(parameters));
+            using (var response = req.GetResponse())
+            {
+                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                {
+                    string strRecv = sr.ReadToEnd();
+                    return (JsonObject)JsonObject.Parse(strRecv);
+                    
+                }
+            }
+            //HttpClient client = new HttpClient();
+            //HttpResponseMessage response = client.GetAsync(url + "?" + UrlEncode(parameters)).Result;
+            //response.EnsureSuccessStatusCode();
+            //string content = response.Content.ReadAsStringAsync().Result;
+            //return (JsonObject)JsonObject.Parse(content);
         }
 
         private string UrlEncode(Dictionary<string, string> parameters)
@@ -580,12 +592,33 @@ namespace Spacebuilder.Webim
 
         private JsonObject HttpPost(string path, Dictionary<string, string> data)
         {
+            //String url = this.ApiUrl(path);
+            //HttpClient client = new HttpClient();
+            //HttpResponseMessage response = client.PostAsync(url, new FormUrlEncodedContent(data.AsEnumerable())).Result;
+            //response.EnsureSuccessStatusCode();
+            //string content = response.Content.ReadAsStringAsync().Result;
+            //return (JsonObject)JsonObject.Parse(content);
+
             String url = this.ApiUrl(path);
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = client.PostAsync(url, new FormUrlEncodedContent(data.AsEnumerable())).Result;
-            response.EnsureSuccessStatusCode();
-            string content = response.Content.ReadAsStringAsync().Result;
-            return (JsonObject)JsonObject.Parse(content);
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url);
+            Encoding encoding = Encoding.UTF8;
+            byte[] bs = Encoding.UTF8.GetBytes(UrlEncode(data));
+            req.Method = "POST";
+            req.ContentType = "application/x-www-form-urlencoded";
+            req.ContentLength = bs.Length;
+            using (Stream reqStream = req.GetRequestStream())
+            {
+                reqStream.Write(bs, 0, bs.Length);
+                reqStream.Close();
+            }
+            using (var response = req.GetResponse())
+            {
+                using (StreamReader sr = new StreamReader(response.GetResponseStream(), encoding))
+                {
+                    string strRecv = sr.ReadToEnd();
+                    return (JsonObject)JsonObject.Parse(strRecv);
+                }
+            }
         }
 
         private Dictionary<string, string> NewData()
