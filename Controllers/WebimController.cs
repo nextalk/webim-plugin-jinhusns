@@ -120,6 +120,7 @@ namespace Spacebuilder.Webim.Controllers
                 conn.Add("websocket", (string)json["websocket"]);
 
                 //Update Buddies 
+                JsonObject presenceObj = json["buddies"];
                 foreach (WebimEndpoint b in buddies)
                 {
                     if(presenceObj.ContainsKey(b.Id)) {
