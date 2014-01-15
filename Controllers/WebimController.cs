@@ -120,7 +120,7 @@ namespace Spacebuilder.Webim.Controllers
                 conn.Add("websocket", (string)json["websocket"]);
 
                 //Update Buddies 
-                JsonObject presenceObj = json["buddies"];
+                JsonObject presenceObj = (JsonObject)json["buddies"];
                 foreach (WebimEndpoint b in buddies)
                 {
                     if(presenceObj.ContainsKey(b.Id)) {
@@ -130,7 +130,7 @@ namespace Spacebuilder.Webim.Controllers
                 }
                 
                 //Groups with count
-                JsonObject grpCountObj = json["groups"];
+                JsonObject grpCountObj = (JsonObject)json["groups"];
                 foreach (WebimGroup g in groups)
                 {
                     if(grpCountObj.ContainsKey[g.Id]) {
