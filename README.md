@@ -29,9 +29,9 @@ NexTalk为jinhusns.com定制开发的Webim应用，支持JinhuSNS社区网站访
 2. 安装Webim应用，将Web目录下的文件覆盖到网站根目录下。
 
 备注：
-	（1）如果您修改过Web.config中以下配置：<add key="IISVersion" value="7" />， 则需要在Web/Themes下找到所有的_Footer.cshtml，然后找到@Html.LinkScript("~/Webim/Run.aspx")代码行，改为 @Html.LinkScript("~/Webim/Run")，这是因为IIS7版本允许我们忽略后缀名aspx；
+	（1）如果您修改过Web.config中以下配置：<add key="IISVersion" value="7" />， 则需要在Web/Themes下找到所有的_Footer.cshtml，然后找到@Html.LinkScript("~/Webim/Boot.aspx")代码行，改为 @Html.LinkScript("~/Webim/Boot")，这是因为IIS7版本允许我们忽略后缀名aspx；
 
-    （2）如果您修改过_Footer.cshtml文件，请自己追加@Html.LinkScript("~/Webim/Run.aspx")代码行。
+    （2）如果您修改过_Footer.cshtml文件，请自己追加@Html.LinkScript("~/Webim/Boot.aspx")代码行。
 
 3. 初始化数据库: 在SqlServer中，执行SQL脚本文件Web\Applications\Webim\Setup\Install\SqlServer\01_Install_Webim_Schema.sql
 

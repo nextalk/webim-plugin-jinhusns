@@ -40,9 +40,9 @@ namespace Spacebuilder.Webim.Controllers
             return c;
         }
 
-        // GET: /Webim/Run
+        // GET: /Webim/Boot
         [HttpGet]
-        public ActionResult Run()
+        public ActionResult Boot()
         {
             int iisVersion = 0;
             if (!int.TryParse(ConfigurationManager.AppSettings["IISVersion"], out iisVersion))
@@ -68,12 +68,13 @@ namespace Spacebuilder.Webim.Controllers
 	            local: 'zh-CN',
 				emot: 'default',
 				opacity: 80,
+                show_unavailable: false,
                 aspx: {3},
 	            min: """" //window.location.href.indexOf(""webim_debug"") != -1 ? """" : "".min""
             }};
             
-            _IMC.script = window.webim ? '' : ('<link href=""' + _IMC.uiPath + 'static/webim.'+ _IMC.production_name + _IMC.min + '.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><link href=""' + _IMC.uiPath + 'static/themes/' + _IMC.theme + '/jquery.ui.theme.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><script src=""' + _IMC.uiPath + 'static/webim.' + _IMC.production_name + _IMC.min + '.js?' + _IMC.version + '"" type=""text/javascript""></script><script src=""' + _IMC.uiPath + 'static/i18n/webim-' + _IMC.local + '.js?' + _IMC.version + '"" type=""text/javascript""></script>');
-            _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.js?' + _IMC.version + '"" type=""text/javascript""></script>';
+            _IMC.script = window.webim ? '' : ('<link href=""' + _IMC.uiPath + 'static/webim'+ _IMC.min + '.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><link href=""' + _IMC.uiPath + 'static/themes/' + _IMC.theme + '/jquery.ui.theme.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><script src=""' + _IMC.uiPath + 'static/webim' + _IMC.min + '.js?' + _IMC.version + '"" type=""text/javascript""></script><script src=""' + _IMC.uiPath + 'static/i18n/webim-' + _IMC.local + '.js?' + _IMC.version + '"" type=""text/javascript""></script>');
+            _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.' + _IMC.production_name + '.js?' + _IMC.version + '"" type=""text/javascript""></script>';
             document.write( _IMC.script );
 
             ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"), setting, aspx.ToString().ToLower());
@@ -104,6 +105,13 @@ namespace Spacebuilder.Webim.Controllers
                 JsonObject json = client.Online(buddyIds, groupIds);
                 Debug.WriteLine(json.ToString());
 
+                if(json.ContainsKey("status")) {
+                    return Json(
+                        new { success = false, error_msg =  json["message"] },
+                        JsonRequestBehavior.AllowGet
+                    );
+                }
+
                 Dictionary<string, string> conn = new Dictionary<string, string>();
                 conn.Add("ticket", (string)json["ticket"]);
                 conn.Add("domain", client.Domain);
@@ -111,34 +119,22 @@ namespace Spacebuilder.Webim.Controllers
                 conn.Add("server", (string)json["jsonpd"]);
                 conn.Add("websocket", (string)json["websocket"]);
 
-                //Online Buddies
-                Dictionary<string, WebimEndpoint> buddyDict = new Dictionary<string, WebimEndpoint>();
-                foreach (WebimEndpoint e in buddies)
+                //Update Buddies 
+                foreach (WebimEndpoint b in buddies)
                 {
-                    buddyDict[e.Id] = e;
+                    if(presenceObj.ContainsKey(b.Id)) {
+                        b.Presence = "online";
+                        b.Show = presenceObj[b.Id];
+                    }
                 }
-                List<WebimEndpoint> onlines = new List<WebimEndpoint>();
-                foreach (JsonValue v in (JsonArray)json["buddies"])
-                {
-                    JsonObject o = (JsonObject)v;
-                    string uid = (string)o["name"];
-                    onlines.Add(buddyDict[uid]);
-                }
-
+                
                 //Groups with count
-                Dictionary<string, WebimGroup> groupDict = new Dictionary<string, WebimGroup>();
+                JsonObject grpCountObj = json["groups"];
                 foreach (WebimGroup g in groups)
                 {
-                    groupDict[g.Id] = g;
-                }
-                List<WebimGroup> groups1 = new List<WebimGroup>();
-                foreach (JsonValue v in (JsonArray)json["groups"])
-                {
-                    JsonObject o = (JsonObject)v;
-                    string gid = (string)o["name"];
-                    WebimGroup group = groupDict[gid];
-                    group.Count = (int)o["total"];
-                    groups1.Add(group);
+                    if(grpCountObj.ContainsKey[g.Id]) {
+                        g.Count = (int)grpCountObj[g.Id];
+                    }
                 }
 
                 //{"success":true,
@@ -154,8 +150,8 @@ namespace Spacebuilder.Webim.Controllers
                 // "new_messages":[]}
 
 
-                var buddyArray = (from b in onlines select b.Data()).ToArray();
-                var groupArray = (from g in groups1 select g.Data()).ToArray();
+                var buddyArray = (from b in buddies select b.Data()).ToArray();
+                var groupArray = (from g in groups select g.Data()).ToArray();
                 return Json(new
                 {
                     success = true,
@@ -168,10 +164,10 @@ namespace Spacebuilder.Webim.Controllers
                 }, JsonRequestBehavior.AllowGet);
 
             }
-            catch (WebimException)
+            catch (Exception)
             {
                 return Json(
-                    new { success = false, error_msg = "IM Server is not found" },
+                    new { success = false, error_msg =  e.ToString() },
                     JsonRequestBehavior.AllowGet
                 );
             }
@@ -285,8 +281,7 @@ namespace Spacebuilder.Webim.Controllers
         {
             WebimClient c = CurrentClient(Request["ticket"]);
             string gid = Request["id"];
-            JsonObject obj = c.Members(gid);
-            JsonArray members = (JsonArray)obj[gid];
+            JsonArray members = c.Members(gid);
             return Content(members.ToString(), "text/json");
             /*
             List<Dictionary<string,string>> list = new List<Dictionary<string,string>>();

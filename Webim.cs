@@ -34,7 +34,7 @@ namespace Spacebuilder.Webim
             return new JsonObject(d);
         }
 
-        abstract public void feed(Dictionary<string, string> data);
+        abstract public Dictionary<string, object> feed(Dictionary<string, string> data);
         //JsonObject toJson();
     }
 
@@ -44,8 +44,7 @@ namespace Spacebuilder.Webim
      * uid:19919
      */
     public class WebimEndpoint : WebimObject
-    {
-        private string id;
+
         /*
          * URI Examples:
          * 
@@ -53,161 +52,92 @@ namespace Spacebuilder.Webim
          * uid:19398
          * sid:echo
          */
-        private string uri;
-        private string nick;
-        private string show;
-        private string status;
-        //last time
-        private string status_time;
-        //space url
-        private string url;
-        //avatar url
-        private string pic_url;
-
         public WebimEndpoint(string id, string uri, string nick)
         {
-            this.id = id;
-            this.uri = uri;
-            this.nick = nick;
-            this.show = "available";
-            this.status = "Online";
-            this.status_time = "";
-            this.url = "";
-            this.pic_url = "";
+            Id = id;
+            Uri = uri;
+            Nick = nick;
+            Presence = "offline";
+            Show = "unavailable";
+            Status = "";
+            StatusTime = "";
+            Url = "";
+            PicUrl = "";
         }
 
-        public string Id
+        public override Dictionary<string, object>
+            feed(Dictionary<string, object> data)
         {
-            get { return id; }
+            data["id"] = Id;
+            data["uri"] = Uri;
+            data["nick"] = Nick;
+            data["presence"] = Presence;
+            data["show"] = Show;
+            data["status"] = Status;
+            data["status_time"] = StatusTime;
+            data["url"] = Url;
+            data["pic_url"] = PicUrl;
+            return data;
         }
 
-        public string Uri
-        {
-            get { return uri; }
-        }
+        public string Id { get; set; }
 
-        public string Nick
-        {
-            get { return nick; }
-            set { this.nick = value; }
-        }
+        public string Uri { get; set; }
 
-        public string Show
-        {
-            get { return show; }
-            set { this.show = value; }
-        }
+        public string Nick { get; set; }
 
-        public string Status
-        {
-            get { return status; }
-            set { this.status = value; }
-        }
+        public string Presence { get; set; }
 
-        public string StatusTime
-        {
-            get { return status_time; }
-            set { this.status_time = value; }
-        }
+        public string Show { get; set; }
 
-        public string Url
-        {
-            get { return url; }
-            set { this.url = value; }
-        }
+        public string Status { get; set; }
 
-        public string PicUrl
-        {
-            get { return pic_url; }
-            set { this.pic_url = value; }
-        }
+        public string StatusTime { get; set; }
 
-        public override void feed(Dictionary<string, string> data)
-        {
-            data["id"] = id;
-            data["uri"] = uri;
-            data["nick"] = nick;
-            data["show"] = show;
-            data["status"] = status;
-            data["status_time"] = status_time;
-            data["url"] = url;
-            data["pic_url"] = pic_url;
-        }
+        public string Url { get; set; }
+
+        public string PicUrl { get; set; }
 
     }
 
 	public class WebimGroup : WebimObject
 	{
-		private string id;
-		private string uri;
-		private string nick;
-		private int count;
-        private string url;
-        private string pic_url;
-        private int all_count;
-		
-		public WebimGroup(string id, string uri, string nick)
-		{
-			this.id = id;
-			this.uri = uri;
-			this.nick = nick;
-			this.count = 0;
-		}
-
-		public string Id
-		{
-			get { return id; }
-			set { this.id = value; }
-		}
-
-		public string Uri
-		{
-			get { return uri; }
-			set { this.uri = value; }
-		}
-
-		public string Nick
-		{
-			get { return nick; }
-			set { this.nick = value; }
-		}
-
-		public int Count
-		{
-			get { return count; }
-			set { this.count = value; }
-		}
-
-        public int AllCount
+        public WebimGroup(string id, string uri, string nick)
         {
-            get { return all_count; }
-            set { this.all_count = value; }
-
+            Id = id;
+            Uri = uri;
+            Nick = nick;
+            Count = 0;
+            AllCount = 0;
+            Url = "";
+            PicUrl = "";
+        }
+        public override Dictionary<string, object> feed(
+            Dictionary<string, object> data)
+        {
+            data["id"] = Id;
+            data["uri"] = Uri;
+            data["nick"] = Nick;
+            data["url"] = Url;
+            data["pic_url"] = PicUrl;
+            data["count"] = Count;
+            data["all_count"] = AllCount;
+            return data;
         }
 
-        public string Url
-        {
-            get { return url; }
-            set { this.url = value; }
-        }
+        public string Id { get; set; }
 
-        public string PicUrl
-        {
-            get { return pic_url; }
-            set { this.pic_url = value; }
-        }
+        public string Uri { get; set; }
 
-		public override void feed(Dictionary<string, string> data)
-		{
-			data["id"] = id;
-			data["uri"] = uri;
-			data["nick"] = nick;
-            data["url"] = url;
-            data["pic_url"] = pic_url;
-			data["count"] = count.ToString();
-            data["all_count"] = all_count.ToString();
-		}
+        public string Nick  { get; set; }
 
+        public int Count { get; set; }
+
+        public int AllCount { get; set; }
+
+        public string Url { get; set; }
+
+        public string PicUrl { get; set; }
 	}
 
     /*
@@ -215,122 +145,139 @@ namespace Spacebuilder.Webim
      */
     public class WebimMessage : WebimObject
     {
-        private string type;
-        private string to;
-        private string body;
-        private string style;
-        private double timestamp;
-        private string nick;
 
         public WebimMessage(string type, string to, string nick, string body, string style, double timestamp)
         {
-            this.type = type;
-            this.to = to;
-            this.nick = nick;
-            this.body = body;
-            this.style = style;
-            this.timestamp = timestamp;
+            Type = type;
+            To = to;
+            Nick = nick;
+            Body = body;
+            Style = style;
+            Timestamp = timestamp;
         }
 
-        public string Type
+        public override Dictionary<string, object> feed(
+    Dictionary<string, object> data)
         {
-            get { return type; }
-            set { this.type = value; }
+            data.Add("type", Type);
+            data.Add("to", To);
+            data.Add("nick", Nick);
+            data.Add("body", Body);
+            data.Add("style", Style);
+            data.Add("timestamp", Timestamp);
+            return data;
         }
 
-        public string Nick
-        {
-            get { return nick; }
-            set { this.nick = value; }
-        }
 
-        public string To
-        {
-            get { return to; }
-            set { this.to = value; }
-        }
+        public string Type { get; set; }
 
-        public string Body
-        {
-            get { return body; }
-            set { this.body = value; }
-        }
+        public string Nick { get; set; }
+       
+        public string To { get; set; }
 
-        public string Style
-        {
-            get { return style; }
-            set { this.style = value; }
-        }
+        public string Body { get; set; }
 
-        public double Timestamp
-        {
-            get { return timestamp; }
-            set { this.timestamp = value; }
-        }
+        public string Style { get; set; }
 
-        public override void feed(Dictionary<string, string> data)
-        {
-            data.Add("type", type);
-            data.Add("to", to);
-            data.Add("nick", nick);
-            data.Add("body", body);
-            data.Add("style", style);
-            data.Add("timestamp", timestamp.ToString());
-        }
+        public double Timestamp { get; set; }
 
     }
 
     public class WebimPresence : WebimObject
     {
 
-        private string show;
-
-        private string status;
-
         public WebimPresence(string show, string status)
         {
-            this.show = show;
-            this.status = status;
+            Show = show;
+            Status = status;
         }
 
-        public override void feed(Dictionary<string, string> data)
+        public override Dictionary<string, object> feed(
+            Dictionary<string, object> data)
         {
-            data.Add("show", show);
-            data.Add("status", status);
+            data.Add("show", Show);
+            data.Add("status", Status);
+            return data;
         }
+
+        public string Show { get; set; }
+
+        public string Status { get; set; }
 
     }
 
     public class WebimStatus : WebimObject
     {
-
-        private string to;
-
-        private string show;
-
         public WebimStatus(string to, string show, string status)
         {
-            this.to = to;
-            this.show = show;
+            To = to;
+            Show = show;
+            Status = status;
         }
 
-        public override void feed(Dictionary<string, string> data)
+        public override Dictionary<string, object> feed(
+            Dictionary<string, object> data)
         {
-            data.Add("to", to);
-            data.Add("show", show);
+            data.Add("to", To);
+            data.Add("show", Show);
+            data.Add("status", Status);
+            return data;
         }
+
+        public string To { get; set; }
+        public string Show { get; set; }
+        public string Status { get; set; }
     }
 
     public class WebimHistory : WebimObject
     {
 
         public WebimHistory()
-        { 
-        }
-        
-        public override void feed(Dictionary<string, string> data)
         {
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
         }
+
+        public override Dictionary<string, object>feed(
+            Dictionary<string, object> data)
+        {
+            data["id"] = Id;
+            data["type"] = Type;
+            data["send"] = Send == 1 ? "true" : "false";
+            data["to"] = To;
+            data["from"] = From;
+            data["nick"] = Nick;
+            data["body"] = Body;
+            data["style"] = Style;
+            data["timestamp"] = Timestamp;
+            return data;
+        }
+	
+		public long Id { get; set; }
+
+		public int Send { get; set; }
+
+		public string Type { get; set; }
+
+		public string To { get; set; }
+
+		public string From { get; set; }
+
+		public string Nick { get; set; }
+		
+		public string Body { get; set; }
+
+		public string Style { get; set; }
+
+		public double Timestamp { get; set; }
+	
+		public int ToDel { get; set; }
+
+		public int FromDel { get; set; }
+
+		public DateTime CreatedAt { get; set; }
+
+		public DateTime UpdatedAt { get; set; }
 
     }
 
@@ -386,6 +333,11 @@ namespace Spacebuilder.Webim
             get { return domain; }
         }
 
+        /**
+         * User Online
+         * 
+         * @return JsonObject
+         */
         public JsonObject Online(IEnumerable<string> buddies, IEnumerable<string> groups)
         {
             Dictionary<string, string> data = NewData();
@@ -397,16 +349,9 @@ namespace Spacebuilder.Webim
             data.Add("nick", ep.Nick);
             data.Add("status", ep.Status);
             data.Add("show", ep.Show);
-            try
-            {
-                JsonObject json = HttpPost("/presences/online", data);
-                this.ticket = (string)json["ticket"];
-                return json;
-            }
-            catch (System.Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            JsonObject json = HttpPost("/presences/online", data);
+            this.ticket = (string)json["ticket"];
+            return json;
         }
 
 
@@ -414,19 +359,12 @@ namespace Spacebuilder.Webim
         * User Offline
         *
         * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Offline()
         {
             Dictionary<string, string> data = NewData();
-            try
-            {
-                return HttpPost("/presences/offline", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/presences/offline", data);
         }
 
         /**
@@ -434,131 +372,113 @@ namespace Spacebuilder.Webim
         *
         * @param presence
         * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Publish(WebimPresence presence)
         {
             Dictionary<string, string> data = NewData();
             data.Add("nick", ep.Nick);
             presence.feed(data);
-            try
-            {
-                return HttpPost("/presences/show", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/presences/show", data);
         }
 
         /**
         * Publish status
         * @param status
         * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Publish(WebimStatus status)
         {
             Dictionary<string, string> data = NewData();
             data.Add("nick", ep.Nick);
             status.feed(data);
-            try
-            {
-                return HttpPost("/statuses", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/statuses", data);
         }
 
         /**
         * Publish Message
         * @param message
         * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Publish(WebimMessage message)
         {
             Dictionary<string, string> data = NewData();
             message.feed(data);
-            try
-            {
-                return HttpPost("/messages", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/messages", data);
+        }
+
+        /**
+        * Push Message, no need to be online
+        * @param from
+        * @param message
+        * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
+        * @throws Exception
+        */
+        public JsonObject Publish(String from, WebimMessage message)
+        {
+            Dictionary<string, object> data = NewData();
+            data.Add("from", from);
+            message.feed(data);
+            return HttpPost("/messages", data);
+        }
+
+        /**
+        * Get presences
+        * @param grpid
+        * @return member list
+        * @throws Exception
+        */
+        public JsonObject Presences(IEnumerable<string> ids)
+        {
+            Dictionary<string, object> data = NewData();
+            data.Add("ids", this.ListJoin(",", ids));
+            return (JsonObject)HttpGet("/presences", data);
         }
 
         /**
         * Get group members
         * @param grpid
         * @return member list
-        * @throws WebIMException
+        * @throws Exception
         */
-        public JsonObject Members(string grpid)
+        public JsonArray Members(string grpid)
         {
             Dictionary<string, string> data = NewData();
             data.Add("group", grpid);
-            try
-            {
-                return HttpGet("/group/members", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return (JsonArray)HttpGet("/group/members", data);
         }
 
         /**
         * Join Group
         * @param grpid
         * @return JsonObject "{'id': 'grpid', 'count': '0'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Join(string grpid)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("nick", ep.Nick);
             data.Add("group", grpid);
-            try
-            {
-                JsonObject respObj = HttpPost("/group/join", data);
-                JsonObject rtObj = new JsonObject();
-                rtObj.Add("id", grpid);
-                rtObj.Add("count", (int)respObj.GetValue(grpid));
-                return rtObj;
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/group/join", data);
         }
 
         /**
         * Leave Group
         * @param grpid
         * @return JsonObject "{'status': 'ok'}" or "{'status': 'error', 'message': 'blabla'}"
-        * @throws WebIMException
+        * @throws Exception
         */
         public JsonObject Leave(string grpid)
         {
             Dictionary<string, string> data = NewData();
             data.Add("nick", ep.Nick);
             data.Add("group", grpid);
-            try
-            {
-                return HttpPost("/group/leave", data);
-            }
-            catch (Exception e)
-            {
-                throw new WebimException(500, e.Message);
-            }
+            return HttpPost("/group/leave", data);
         }
 
-        private JsonObject HttpGet(string path, Dictionary<string, string> parameters)
+        private JsonValue HttpGet(string path, Dictionary<string, string> parameters)
         {
             String url = this.ApiUrl(path);
            
@@ -568,7 +488,7 @@ namespace Spacebuilder.Webim
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
                     string strRecv = sr.ReadToEnd();
-                    return (JsonObject)JsonObject.Parse(strRecv);
+                    return JsonObject.Parse(strRecv);
                     
                 }
             }
@@ -627,7 +547,9 @@ namespace Spacebuilder.Webim
             data.Add("version", "v5");
             data.Add("domain", Domain);
             data.Add("apikey", apikey);
-            data.Add("ticket", Ticket);
+            if(!Ticket.Equals("")) {
+                data.Add("ticket", Ticket);
+            }
             return data;
         }
 
