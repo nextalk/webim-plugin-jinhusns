@@ -46,6 +46,7 @@
     ui.addApp("buddy", {
 		showUnavailable: _IMC.show_unavailable,
         is_login: _IMC['is_login'],
+        collapse: false,
 		disable_login: true,
         loginOptions: _IMC['login_options']
     });
