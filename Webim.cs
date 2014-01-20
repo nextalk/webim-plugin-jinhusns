@@ -15,9 +15,9 @@ namespace Spacebuilder.Webim
     public abstract class WebimObject
     {
 
-        public Dictionary<string, string> Data()
+        public Dictionary<string, object> Data()
         {
-            Dictionary<string, string> data = new Dictionary<string, string>();
+            Dictionary<string, object> data = new Dictionary<string, object>();
             feed(data);
             return data;
         }
@@ -34,7 +34,7 @@ namespace Spacebuilder.Webim
             return new JsonObject(d);
         }
 
-        abstract public Dictionary<string, object> feed(Dictionary<string, string> data);
+        public abstract Dictionary<string, object> feed(Dictionary<string, object> data);
         //JsonObject toJson();
     }
 
@@ -44,6 +44,7 @@ namespace Spacebuilder.Webim
      * uid:19919
      */
     public class WebimEndpoint : WebimObject
+    {
 
         /*
          * URI Examples:
@@ -65,8 +66,7 @@ namespace Spacebuilder.Webim
             PicUrl = "";
         }
 
-        public override Dictionary<string, object>
-            feed(Dictionary<string, object> data)
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data["id"] = Id;
             data["uri"] = Uri;
@@ -100,8 +100,8 @@ namespace Spacebuilder.Webim
 
     }
 
-	public class WebimGroup : WebimObject
-	{
+    public class WebimGroup : WebimObject
+    {
         public WebimGroup(string id, string uri, string nick)
         {
             Id = id;
@@ -112,8 +112,8 @@ namespace Spacebuilder.Webim
             Url = "";
             PicUrl = "";
         }
-        public override Dictionary<string, object> feed(
-            Dictionary<string, object> data)
+
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data["id"] = Id;
             data["uri"] = Uri;
@@ -129,7 +129,7 @@ namespace Spacebuilder.Webim
 
         public string Uri { get; set; }
 
-        public string Nick  { get; set; }
+        public string Nick { get; set; }
 
         public int Count { get; set; }
 
@@ -138,7 +138,7 @@ namespace Spacebuilder.Webim
         public string Url { get; set; }
 
         public string PicUrl { get; set; }
-	}
+    }
 
     /*
      * Webim Message
@@ -156,8 +156,7 @@ namespace Spacebuilder.Webim
             Timestamp = timestamp;
         }
 
-        public override Dictionary<string, object> feed(
-    Dictionary<string, object> data)
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data.Add("type", Type);
             data.Add("to", To);
@@ -172,7 +171,7 @@ namespace Spacebuilder.Webim
         public string Type { get; set; }
 
         public string Nick { get; set; }
-       
+
         public string To { get; set; }
 
         public string Body { get; set; }
@@ -192,8 +191,7 @@ namespace Spacebuilder.Webim
             Status = status;
         }
 
-        public override Dictionary<string, object> feed(
-            Dictionary<string, object> data)
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data.Add("show", Show);
             data.Add("status", Status);
@@ -215,8 +213,7 @@ namespace Spacebuilder.Webim
             Status = status;
         }
 
-        public override Dictionary<string, object> feed(
-            Dictionary<string, object> data)
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data.Add("to", To);
             data.Add("show", Show);
@@ -238,8 +235,7 @@ namespace Spacebuilder.Webim
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public override Dictionary<string, object>feed(
-            Dictionary<string, object> data)
+        public override Dictionary<string, object> feed(Dictionary<string, object> data)
         {
             data["id"] = Id;
             data["type"] = Type;
@@ -252,32 +248,32 @@ namespace Spacebuilder.Webim
             data["timestamp"] = Timestamp;
             return data;
         }
-	
-		public long Id { get; set; }
 
-		public int Send { get; set; }
+        public long Id { get; set; }
 
-		public string Type { get; set; }
+        public int Send { get; set; }
 
-		public string To { get; set; }
+        public string Type { get; set; }
 
-		public string From { get; set; }
+        public string To { get; set; }
 
-		public string Nick { get; set; }
-		
-		public string Body { get; set; }
+        public string From { get; set; }
 
-		public string Style { get; set; }
+        public string Nick { get; set; }
 
-		public double Timestamp { get; set; }
-	
-		public int ToDel { get; set; }
+        public string Body { get; set; }
 
-		public int FromDel { get; set; }
+        public string Style { get; set; }
 
-		public DateTime CreatedAt { get; set; }
+        public double Timestamp { get; set; }
 
-		public DateTime UpdatedAt { get; set; }
+        public int ToDel { get; set; }
+
+        public int FromDel { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
 
     }
 
@@ -340,7 +336,7 @@ namespace Spacebuilder.Webim
          */
         public JsonObject Online(IEnumerable<string> buddies, IEnumerable<string> groups)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("groups", this.ListJoin(",", groups));
             data.Add("buddies", this.ListJoin(",", buddies));
             data.Add("uri", ep.Uri);
@@ -363,7 +359,7 @@ namespace Spacebuilder.Webim
         */
         public JsonObject Offline()
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             return HttpPost("/presences/offline", data);
         }
 
@@ -376,7 +372,7 @@ namespace Spacebuilder.Webim
         */
         public JsonObject Publish(WebimPresence presence)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("nick", ep.Nick);
             presence.feed(data);
             return HttpPost("/presences/show", data);
@@ -390,7 +386,7 @@ namespace Spacebuilder.Webim
         */
         public JsonObject Publish(WebimStatus status)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("nick", ep.Nick);
             status.feed(data);
             return HttpPost("/statuses", data);
@@ -404,7 +400,7 @@ namespace Spacebuilder.Webim
         */
         public JsonObject Publish(WebimMessage message)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             message.feed(data);
             return HttpPost("/messages", data);
         }
@@ -445,7 +441,7 @@ namespace Spacebuilder.Webim
         */
         public JsonArray Members(string grpid)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("group", grpid);
             return (JsonArray)HttpGet("/group/members", data);
         }
@@ -472,16 +468,16 @@ namespace Spacebuilder.Webim
         */
         public JsonObject Leave(string grpid)
         {
-            Dictionary<string, string> data = NewData();
+            Dictionary<string, object> data = NewData();
             data.Add("nick", ep.Nick);
             data.Add("group", grpid);
             return HttpPost("/group/leave", data);
         }
 
-        private JsonValue HttpGet(string path, Dictionary<string, string> parameters)
+        private JsonValue HttpGet(string path, Dictionary<string, object> parameters)
         {
             String url = this.ApiUrl(path);
-           
+
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url + "?" + UrlEncode(parameters));
             using (var response = req.GetResponse())
             {
@@ -489,7 +485,7 @@ namespace Spacebuilder.Webim
                 {
                     string strRecv = sr.ReadToEnd();
                     return JsonObject.Parse(strRecv);
-                    
+
                 }
             }
             //HttpClient client = new HttpClient();
@@ -499,18 +495,18 @@ namespace Spacebuilder.Webim
             //return (JsonObject)JsonObject.Parse(content);
         }
 
-        private string UrlEncode(Dictionary<string, string> parameters)
+        private string UrlEncode(Dictionary<string, object> parameters)
         {
             List<string> l = new List<string>();
-            foreach (KeyValuePair<string, string> p in parameters)
+            foreach (KeyValuePair<string, object> p in parameters)
             {
                 //TODO: FIXME Later
-                l.Add(p.Key + "=" + Uri.EscapeUriString(p.Value));
+                l.Add(p.Key + "=" + Uri.EscapeUriString(p.Value != null ? p.Value.ToString() : string.Empty));
             }
             return string.Join("&", l.ToArray());
         }
 
-        private JsonObject HttpPost(string path, Dictionary<string, string> data)
+        private JsonObject HttpPost(string path, Dictionary<string, object> data)
         {
             //String url = this.ApiUrl(path);
             //HttpClient client = new HttpClient();
@@ -541,13 +537,14 @@ namespace Spacebuilder.Webim
             }
         }
 
-        private Dictionary<string, string> NewData()
+        private Dictionary<string, object> NewData()
         {
-            Dictionary<string, string> data = new Dictionary<string, string>();
+            Dictionary<string, object> data = new Dictionary<string, object>();
             data.Add("version", "v5");
             data.Add("domain", Domain);
             data.Add("apikey", apikey);
-            if(!Ticket.Equals("")) {
+            if (!Ticket.Equals(""))
+            {
                 data.Add("ticket", Ticket);
             }
             return data;
@@ -585,4 +582,4 @@ namespace Spacebuilder.Webim
     }
 
 }
-     
+

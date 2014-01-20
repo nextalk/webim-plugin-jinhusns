@@ -105,9 +105,10 @@ namespace Spacebuilder.Webim.Controllers
                 JsonObject json = client.Online(buddyIds, groupIds);
                 Debug.WriteLine(json.ToString());
 
-                if(json.ContainsKey("status")) {
+                if (json.ContainsKey("status"))
+                {
                     return Json(
-                        new { success = false, error_msg =  json["message"] },
+                        new { success = false, error_msg = json["message"] },
                         JsonRequestBehavior.AllowGet
                     );
                 }
@@ -120,24 +121,27 @@ namespace Spacebuilder.Webim.Controllers
                 conn.Add("websocket", (string)json["websocket"]);
 
                 //Update Buddies 
-                JsonObject presenceObj = (JsonObject)json["buddies"];
-                foreach (WebimEndpoint b in buddies)
-                {
-                    if(presenceObj.ContainsKey(b.Id)) {
-                        b.Presence = "online";
-                        b.Show = presenceObj[b.Id];
-                    }
-                }
-                
+                JsonObject presenceObj = json["buddies"].ToJsonObject();
+                buddies = buddies.Select(b =>
+                  {
+                      if (presenceObj.ContainsKey(b.Id))
+                      {
+                          b.Presence = "online";
+                          b.Show = (string)presenceObj[b.Id];
+                      }
+                      return b;
+                  });
+
                 //Groups with count
-                JsonObject grpCountObj = (JsonObject)json["groups"];
-                foreach (WebimGroup g in groups)
+                JsonObject grpCountObj = json["groups"].ToJsonObject();
+                groups = groups.Select(g =>
                 {
-                    if(grpCountObj.ContainsKey[g.Id]) {
+                    if (grpCountObj.ContainsKey(g.Id))
+                    {
                         g.Count = (int)grpCountObj[g.Id];
                     }
-                }
-
+                    return g;
+                });
                 //{"success":true,
                 // "connection":{
                 // "ticket":"fcc493f7a7b17cfadbf4|admin",
@@ -165,10 +169,10 @@ namespace Spacebuilder.Webim.Controllers
                 }, JsonRequestBehavior.AllowGet);
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return Json(
-                    new { success = false, error_msg =  e.ToString() },
+                    new { success = false, error_msg = e.ToString() },
                     JsonRequestBehavior.AllowGet
                 );
             }
@@ -283,7 +287,7 @@ namespace Spacebuilder.Webim.Controllers
             WebimClient c = CurrentClient(Request["ticket"]);
             string gid = Request["id"];
             JsonArray members = c.Members(gid);
-            return Content(members.ToString(), "text/json");
+            return Json(members);
             /*
             List<Dictionary<string,string>> list = new List<Dictionary<string,string>>();
             foreach (JsonObject m in (JsonArray)obj[gid])

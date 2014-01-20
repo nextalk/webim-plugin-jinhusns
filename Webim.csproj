@@ -181,7 +181,6 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\Shared\Error.aspx" />
-    <Content Include="UI\run.js" />
     <Content Include="UI\static\assets\applicationupdater_ui.swf" />
     <Content Include="UI\static\assets\sound.swf" />
     <Content Include="UI\static\assets\sound\msg.mp3" />
@@ -664,10 +663,8 @@
       <SubType>Designer</SubType>
     </Content>
     <None Include="UI\.webim.js.swp" />
-    <None Include="UI\run.js~" />
     <None Include="UI\static\themes\clean" />
     <None Include="UI\static\themes\data.php" />
-    <Content Include="Views\Webim\Run.cshtml" />
     <Content Include="Views\Webim\DownloadHistory.cshtml" />
   </ItemGroup>
   <ItemGroup>
