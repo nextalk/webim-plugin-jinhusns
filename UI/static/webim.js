@@ -5,8 +5,8 @@
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Fri Jan 10 21:26:30 2014 +0800
- * Commit: 6c4d6a83334b2bfde22e16fe87424f2f0749b6c8
+ * Date: Sun Jan 19 23:26:49 2014 +0800
+ * Commit: bc8bcd8b60c1eda8ad39da4f00a5e256c0b91825
  */
 (function(window, document, undefined){
 
@@ -1373,6 +1373,8 @@ extend(webim.prototype, {
 		self.data.user.presence = "offline";
 		self.data.user.show = "unavailable";
 		self.buddy.clear();
+		self.room.clear();
+		self.history.clean();
 		self.trigger("offline", [type, msg] );
 	},
 	autoOnline: function(){
@@ -1836,6 +1838,9 @@ model( "buddy", {
 			//Presence in [show,offline,online]
 			v.presence = v.presence == "offline" ? "offline" : "online";
 			v.incomplete = !dataHash[ v.id ];
+			if( !v.group && v.id ) {
+				v.group = v.id.indexOf("vid:") == 0 ? "visitor" : v.group;
+			}
 		}
 		self.set( data );
 	},
@@ -2045,6 +2050,9 @@ model( "buddy", {
 			}
 		},
 		clear:function(){
+			var self = this;
+			self.data = [];
+			self.dataHash = {};
 		}
 	} );
 } )();
@@ -2059,6 +2067,11 @@ model("history", {
 		self.data = self.data || {};
 		self.data.chat = self.data.chat || {};
 		self.data.grpchat = self.data.grpchat || {};
+	},
+	clean: function(){
+		var self = this;
+		self.data.chat = {};
+		self.data.grpchat = {};
 	},
 	get: function( type, id ) {
 		return this.data[type][id];
@@ -2151,8 +2164,8 @@ model("history", {
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Fri Jan 10 22:23:54 2014 +0800
- * Commit: ac2b3a60253163624266c5a7a92c1dd0bac27cc7
+ * Date: Mon Jan 20 12:40:36 2014 +0800
+ * Commit: 1c512668d4f3b4434160bf37deeeacf9d7f9b742
  */
 (function(window,document,undefined){
 
@@ -3980,8 +3993,13 @@ widget("history", {
 			var val = data[i];
 			markup.push(self._renderMsg(val));
 		}
-		self.$.content.innerHTML += markup.join('');
+		//self.$.content.innerHTML += markup.join('');
+		self.$.content.appendChild( createElement( "<div>"+markup.join('')+"</div>" ) );
 		self.trigger("update");
+	},
+	notice: function( msg ) {
+		this.$.content.appendChild( createElement( "<div class='ui-corner-all webim-history-notice ui-state-default ui-state-error'>"+msg+"</div>" ) );
+		this.trigger("update");
 	},
 	_renderMsg: function(logItem){
 		var self = this;
@@ -4267,7 +4285,7 @@ app( "chat", function( options ) {
 		var chatUI = new webimUI.chat( null, options );
 
 		chatUI.bind( "sendMessage", function( e, msg ) {
-			im.sendMessage( msg );
+			im.sendMessage( msg, function(data){ data && data.message && chatUI.history.notice( data.message ); } );
 			history.set( msg );
 		}).bind("downloadHistory", function( e, info ){
 			history.download( "grpchat", info.id );
@@ -4320,7 +4338,7 @@ app( "chat", function( options ) {
 			im.buddy.update(id);
 
 		chatUI.bind("sendMessage", function( e, msg ) {
-			im.sendMessage( msg );
+			im.sendMessage( msg, function(data){ data && data.message && chatUI.history.notice( data.message ); } );
 			history.set( msg );
 		}).bind("sendStatus", function( e, msg ) {
 			im.sendStatus( msg );
@@ -5233,7 +5251,7 @@ widget("buddy",{
 					<ul id=":ul"></ul>\
 						</div>\
 							</div>',
-	tpl_group: '<li><h4><%=title%>(<%=count%>)</h4><hr class="webim-line ui-state-default" /><ul></ul></li>',
+	tpl_group: '<li><h4><em class="ui-icon ui-icon-triangle-1-s"></em><span><%=title%>(<%=count%>)</span></h4><hr class="webim-line ui-state-default" /><ul></ul></li>',
 	tpl_li: '<li title="" class="webim-buddy-<%=show%>"><a href="<%=url%>" rel="<%=id%>" class="ui-helper-clearfix"><div id=":tabCount" class="webim-window-tab-count">0</div><em class="webim-icon webim-icon-<%=show%>" title="<%=human_show%>"><%=show%></em><img width="25" src="<%=pic_url%>" defaultsrc="<%=default_pic_url%>" onerror="var d=this.getAttribute(\'defaultsrc\');if(d && this.src!=d)this.src=d;" /><strong><%=nick%></strong><span><%=status%></span></a></li>'
 },{
 	_init: function(){
@@ -5392,16 +5410,46 @@ self.trigger("offline");
 				var g_el = createElement(tpl(self.options.tpl_group));
 				hide( g_el );
 				if(group_name == i18n("stranger")) end = true;
-				if(end) ul.appendChild(g_el);
-				else ul.insertBefore(g_el, ul.firstChild);
+				if(end) {
+					ul.appendChild(g_el);
+					self._lastChild = g_el;
+				} else {
+					self._lastChild ? 
+						ul.insertBefore(g_el, ul.lastChild) :
+						ul.appendChild(g_el);
+				}
+				var li_el = g_el.lastChild
+				  , trigger = g_el.firstChild
+				  , _icon = trigger.firstChild
+				  , openC = "ui-icon-triangle-1-s"
+				  , closeC = "ui-icon-triangle-1-e"
+				  , collapse = self.options.collapse;
+
 				group = {
 					name: group_name,
 					el: g_el,
 					count: 0,
-					title: g_el.firstChild,
-					li: g_el.lastChild
+					title: g_el.firstChild.lastChild,
+					li: li_el
 				};
 				self.groups[group_name] = group;
+				if( collapse === undefined ) {
+					hide( _icon );
+				} else {
+					if ( collapse ) {
+						replaceClass( _icon, openC, closeC );
+						hide( li_el );
+					}
+					addEvent( trigger, "click", function(){
+						if( hasClass(_icon, openC) ) {
+							replaceClass( _icon, openC, closeC );
+							hide( li_el );
+						} else {
+							replaceClass( _icon, closeC, openC );
+							show( li_el );
+						}
+					} );
+				}
 			}
 			if(group.count == 0) show(group.el);
 			self.li_group[id] = group;
@@ -5622,6 +5670,16 @@ app("room", function( options ) {
 		info.blocked && (info.nick = nick + "(" + i18n("blocked") + ")");
 		roomUI.li[info.id] ? roomUI.update(info) : ( !ignore && roomUI.add(info) );
 	}
+	hide( roomUI.$.actions );
+	im.bind( "beforeOnline", function(){
+	}).bind("online", function() {
+		show( roomUI.$.actions );
+	}).bind( "offline", function( type, msg ) {
+		hide( roomUI.$.actions );
+		roomUI.removeAll();
+	});
+	return roomUI;
+
 });
 widget("room",{
 	template: '<div id="webim-room" class="webim-room webim-flex webim-box">\
@@ -5818,7 +5876,7 @@ widget("room",{
 	showCount:function( id, count ){
 		var li = this.li;
 		if( li[id] ){
-			_countDisplay( li[id].firstChild.nextSibling.firstChild, count );
+			_countDisplay( li[id].firstChild.nextSibling.nextSibling.firstChild, count );
 		}
 	},
 	active: function(id){
