@@ -56,6 +56,7 @@ namespace Spacebuilder.Webim.Controllers
 	            path: '{0}',
 	            uiPath: '{1}',
 	            is_login: true,
+                is_visitor: false,
 	            user: '',
 	            setting: {2},
 	            menu: '',
