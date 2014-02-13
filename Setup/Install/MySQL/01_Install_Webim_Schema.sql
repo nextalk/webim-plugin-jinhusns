@@ -19,7 +19,7 @@ CREATE TABLE spb_Webim_Histories (
 	KEY `to` (`ToUser`),
 	KEY `from` (`fromUser`),
 	KEY `send` (`Send`)
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS spb_Webim_Settings;
 CREATE TABLE spb_Webim_Settings(
@@ -29,7 +29,7 @@ CREATE TABLE spb_Webim_Settings(
 	`Created_at` DATETIME DEFAULT NULL,
 	`Updated_at` DATETIME DEFAULT NULL,
 	PRIMARY KEY (`Id`) 
-)ENGINE=MyISAM;
+)ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS spb_Webim_Visitors;
@@ -43,5 +43,5 @@ CREATE TABLE spb_Webim_Visitors (
       `Created_at` datetime DEFAULT NULL,
       PRIMARY KEY (`Id`),
       UNIQUE KEY `Webim_visitor_name` (`Name`)
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
