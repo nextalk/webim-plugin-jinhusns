@@ -1,12 +1,12 @@
 /*!
- * Webim UI v5.1 
+ * Webim UI v5.4 
  * http://www.webim20.cn/
  *
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Mon Jan 20 12:40:36 2014 +0800
- * Commit: 1c512668d4f3b4434160bf37deeeacf9d7f9b742
+ * Date: Fri Apr 18 16:33:45 2014 +0800
+ * Commit: f624aa19f33d55e469361fbc5615a7d8e6f99c88
  */
 
 body {
@@ -104,7 +104,7 @@ a .webim-icon, a .ui-icon{
 
 
 /*
- * jQuery UI CSS Framework 5.1 
+ * jQuery UI CSS Framework 5.4 
  *
  * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
@@ -213,9 +213,12 @@ a .webim-icon, a .ui-icon{
 .webim-icon-invisible{
 	background-position:-48px -80px;
 }
+
+/*
 .webim-icon-unavailable{
 	background-position:-64px -80px;
 }
+*/
 /*use bullet*/
 .webim-icon-available{
 	background-position:0 -64px;
@@ -518,7 +521,7 @@ a .webim-icon, a .ui-icon{
 
 
 .webim-layout .webim-buddy-window .webim-window-tab{
-        width: 13.6em;
+        width: 16em;
 }
 .webim-layout .webim-buddy-window .webim-window-tab h4{
 		margin-right: 0;
@@ -955,7 +958,13 @@ a .webim-icon, a .ui-icon{
 
 #webim-buddy .webim-buddy-unavailable img{
 	filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
-	-webkit-filter: grayscale(100%);
+    filter: gray; /* IE6-9 */
+	-webkit-filter: grayscale(100%); /*webkit*/
+}
+
+/* invisible -> unavailable icon */
+#webim-buddy li.webim-buddy-invisible .webim-icon-invisible{
+	background-position:-64px -64px;
 }
 
 
@@ -1257,11 +1266,11 @@ a .webim-icon, a .ui-icon{
 }
 
 #webim-room .webim-room-discussion-list li{
-	padding: 5px 10px;
+	padding: 0px 2px;
 }
 
 #webim-room .webim-room-discussion-list li input{
-	margin-right: 10px;
+	margin-right: 5px;
 }
 
 
@@ -1302,6 +1311,17 @@ a .webim-icon, a .ui-icon{
 
 .webim-chatlink-offline{
 	background-image:url(images/chat_offline.gif);
+}
+.webim-chaticon {
+	cursor:pointer;
+	padding-left: 1.2em;
+	background:url(images/chat_offline.gif) no-repeat 2px center;
+	display:inline;
+	*display:inline-block;
+}
+
+.webim-chaticon-online{
+	background-image:url(images/chat_online.gif);
 }
 .webim-notification {
         padding:1em .5em;
@@ -1456,14 +1476,3 @@ a .webim-icon, a .ui-icon{
 	-webkit-box-shadow:0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
-/*discuz X1*/
-#pcd .webim-chatlink{
-	padding-left: 0;
-	background-position: -30px 0;
-}
-
-/*discuz X1.5*/
-#pcd .ul_list .webim-chatlink{
-	background-position: 0px center;
-	padding-left: 20px;
-}

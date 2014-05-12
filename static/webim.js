@@ -1,12 +1,12 @@
 /*!
- * Webim v1.1.0
- * http://www.webim20.cn/
+ * Webim v5.4
+ * http://nextalk.im/
  *
- * Copyright (c) 2013 Arron
+ * Copyright (c) 2014 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Sun Jan 19 23:26:49 2014 +0800
- * Commit: bc8bcd8b60c1eda8ad39da4f00a5e256c0b91825
+ * Date: Sat Apr 5 10:22:27 2014 +0800
+ * Commit: 62756690a8b3ef65c198cd8ea9ce651b348cfcd9
  */
 (function(window, document, undefined){
 
@@ -292,6 +292,11 @@ function ajax( origSettings ) {
 		for( var key in origSettings ) {
 			s[ key ] = origSettings[ key ];
 		}
+	}
+
+	//Only GET when jsonp
+	if( s.dataType === "jsonp" ) {
+		s.type = "GET";
 	}
 
 	var jsonp, status, data, type = s.type.toUpperCase(), noContent = rnoContent.test(type), head, proxy, win = window, script;
@@ -1105,7 +1110,6 @@ ClassEvent.on( comet );
  * websocket
  */
 
-
 function socket( url, options ) {
 	var self = this, options = options || {};
 	var ws = self.ws = new WebSocket( url );
@@ -1339,12 +1343,13 @@ extend(webim.prototype, {
 		each( data.rooms, function(n, v) {
 			history.init( "grpchat", v.id, v.history );
 		});
+        //FIXED BY ery
 		//blocked rooms
-		var b = self.setting.get("blocked_rooms"), roomData = data.rooms;
-		isArray(b) && roomData && each(b,function(n,v){
-			roomData[v] && (roomData[v].blocked = true);
-		});
-		room.set(roomData);
+		//var b = self.setting.get("blocked_rooms"), roomData = data.rooms;
+		//isArray(b) && roomData && each(b,function(n,v){
+		//	roomData[v] && (roomData[v].blocked = true);
+		//});
+		room.set(data.rooms);
 		room.options.ticket = data.connection.ticket;
 		self.trigger("online",[data]);
 		self._createConnect();
@@ -1415,15 +1420,12 @@ extend(webim.prototype, {
 			buddy.presence( map( grep( data, grepPresence ), mapFrom ) );
 			data = grep( data, grepRoomPresence );
 			for (var i = data.length - 1; i >= 0; i--) {
-				var dd = data[i];
-				if( dd.type == "leave" ) {
-					room.removeMember(dd.to || dd.status, dd.from);
-				} else {
-					room.addMember(dd.to || dd.status, {
-						id: dd.from
-					  , nick: dd.nick
-					});
-				}
+                /*
+                 * Redsigned by ery
+                 * 
+                 * Load all members when leaved
+                 */
+                room.onPresence(data[i]);
 			};
 		});
 
@@ -1439,7 +1441,7 @@ extend(webim.prototype, {
 			return a.type == "online" || a.type == "offline" || a.type == "show";
 		}
 		function grepRoomPresence( a ){
-			return a.type == "join" || a.type == "leave";
+			return a.type == "invite" || a.type == "join" || a.type == "leave";
 		}
 	},
 	handle: function(data){
@@ -1505,10 +1507,6 @@ extend(webim.prototype, {
 			error: callback
 		} );
 	},
-	//setStranger: function(ids){
-	//	this.stranger_ids = idsArray(ids);
-	//},
-	//stranger_ids: [],
 	online: function( params ) {
 		var self = this, status = self.status;
 		if ( self.state !== webim.OFFLINE ) {
@@ -1523,7 +1521,7 @@ extend(webim.prototype, {
 			});
 		}
 		params = extend({                                
-			//stranger_ids: self.stranger_ids.join(","),
+			//chatlink_ids: self.chatlink_ids.join(","),
 			buddy_ids: buddy_ids.join(","),
 			room_ids: room_ids.join(","),
 			csrf_token: webim.csrf_token,
@@ -1621,7 +1619,7 @@ function route( ob, val ) {
 window.webim = webim;
 
 extend( webim, {
-	version: "1.1.0",
+	version: "5.4",
 	defaults:{
 	},
 	log: log,
@@ -1660,9 +1658,7 @@ model("setting",{
 		play_sound: true,
 		buddy_sticky: true,
 		minimize_layout: true,
-		msg_auto_pop: true,
-		temporary_rooms: [],
-		blocked_rooms: []
+		msg_auto_pop: true
 	}
 },{
 	_init:function(){
@@ -1909,93 +1905,142 @@ model( "buddy", {
 			else
 				return this.data;
 		},
+        //Invite members to create a temporary room
+        invite: function(id, nick, members, callback) {
+			var self = this, options = self.options, user = options.user;
+			ajax({
+				type: "post",
+				cache: false,
+				url: route( "invite" ),
+				data: {
+					ticket: options.ticket,
+					id: id,
+					nick: nick || "", 
+                    members: members.join(","),
+					csrf_token: webim.csrf_token
+				},
+                //data is a room object
+				success: function( data ) {
+					self.set( [ data ] );
+					self.loadMember( id );
+					callback && callback( data );
+				}
+			});
+                
+        },
+		join:function(id, nick, callback){
+			var self = this, options = self.options, d = self.dataHash[id], user = options.user;
+
+			ajax({
+				type: "post",
+				cache: false,
+				url: route( "join" ),
+				data: {
+					ticket: options.ticket,
+					id: id,
+                    //temporary: d.temporary,
+					nick: nick || "", 
+					csrf_token: webim.csrf_token
+				},
+				success: function( data ) {
+					self.set( [ data ] );
+					self.loadMember( id );
+					callback && callback( data );
+				}
+			});
+		},
+		leave: function(id) {
+			var self = this, options = self.options, d = self.dataHash[id], user = options.user;
+			if(d) {
+				ajax({
+					type: "post",
+					cache: false,
+					url: route( "leave" ),
+					data: {
+						ticket: options.ticket,
+						id: id,
+						nick: user.nick, 
+                        temporary: d.temporary,
+						csrf_token: webim.csrf_token
+                    },
+                    success: function( data ) {
+                        delete self.dataHash[id];
+                        self.trigger("leaved",[id]);
+                    }
+				});
+			}
+		},
 		block: function(id) {
-			var self = this, d = self.dataHash[id];
+			var self = this, options = self.options, d = self.dataHash[id];
 			if(d && !d.blocked){
 				d.blocked = true;
 				var list = [];
-				each(self.dataHash,function(n,v){
+				each(self.dataHash, function(n,v){
 					if(!v.temporary && v.blocked) list.push(v.id);
 				});
-				self.trigger("block",[id, list]);
+				ajax({
+					type: "post",
+					cache: false,
+					url: route( "block" ),
+					data: {
+						ticket: options.ticket,
+						id: id,
+						csrf_token: webim.csrf_token
+                    },
+                    success: function(data) {
+                        self.trigger("blocked",[id, list]);
+                    }
+				});
 			}
 		},
 		unblock: function(id) {
-			var self = this, d = self.dataHash[id];
+			var self = this, options = self.options, d = self.dataHash[id];
 			if(d && d.blocked){
 				d.blocked = false;
 				var list = [];
 				each(self.dataHash,function(n,v){
 					if(!v.temporary && v.blocked) list.push(v.id);
 				});
-				self.trigger("unblock",[id, list]);
+				ajax({
+					type: "post",
+					cache: false,
+					url: route( "unblock" ),
+					data: {
+						ticket: options.ticket,
+						id: id,
+						csrf_token: webim.csrf_token
+                    },
+                    success: function(data) {
+                        self.trigger("unblocked",[id, list]);
+                    }
+				});
 			}
 		},
 		set: function(d) {
 			var self = this, data = self.data, dataHash = self.dataHash, status = {};
 			each(d,function(k,v){
 				var id = v.id;
-				if(id){
-					v.members = v.members || [];
-					v.count = v.count || 0;
-					v.all_count = v.all_count || 0;
-					if(!dataHash[id]){
-						dataHash[id] = v;
-						data.push(v);
-					}
-					else extend(dataHash[id], v);
-					self.trigger("join",[dataHash[id]]);
-				}
+                if(!id) return;
 
+                v.members = v.members || [];
+                v.all_count = v.members.length;
+                v.count = 0;
+                each(v.members, function(k, m) {
+                    if(m.presence == "online")  {
+                        v.count += 1;
+                    }
+                });
+                if(!dataHash[id]){
+                    dataHash[id] = v;
+                    data.push(v);
+                } else {
+                    extend(dataHash[id], v);
+                    //TODO: compare and trigger
+                }
+                self.trigger("updated", dataHash[id]);
 			});
 		},
-		addMember: function(room_id, info){
-			var self = this;
-			if(isArray(info)){
-				each(info, function(k,v){
-					self.addMember(room_id, v);
-				});
-				return;
-			};
-			var room = self.dataHash[room_id];
-			if(room){
-				var members = room.members, member;
-				for (var i = members.length; i--; i){
-					if (members[i].id == info.id) {
-						member = members[i];
-					}
-				}
-				if(!member){
-					info.nick = info.nick;
-					members.push(info);
-					room.count = members.length;
-					self.trigger("addMember",[room_id, info]);
-				}
-			}
-		},
-		removeMember: function(room_id, member_id){
-			var self = this
-			  , room = this.dataHash[room_id];
-			if(room){
-				var members = room.members, member;
-				for (var i = members.length; i--; i){
-					if (members[i].id == member_id) {
-						member = members[i];
-						members.splice(i, 1);
-						room.count--;
-					}
-				}
-				member && self.trigger("removeMember",[room_id, member]);
-			}
-		},
-		initMember: function(id){
-			var room = this.dataHash[id];
-			if(room && !room.initMember){
-				room.initMember = true;
-				this.loadMember(id);
-			}
-		},
-		loadMember: function(id){
+		loadMember: function(id) {
 			var self = this, options = self.options;
 			ajax( {
 				type: "get",
@@ -2007,48 +2052,37 @@ model( "buddy", {
 					csrf_token: webim.csrf_token
 				},
 				success: function(data){
-					self.addMember(id, data);
+					self.updateMember(id, data);
 				}
 			});
 		},
-		join:function(id, nick, callback){
-			var self = this, options = self.options, user = options.user;
 
-			ajax({
-				type: "post",
-				cache: false,
-				url: route( "join" ),
-				data: {
-					ticket: options.ticket,
-					id: id,
-					nick: nick || "", 
-					csrf_token: webim.csrf_token
-				},
-				success: function( data ) {
-					self.initMember( id );
-					self.set( [ data ] );
-					callback && callback( data );
-				}
-			});
-		},
-		leave: function(id){
-			var self = this, options = self.options, d = self.dataHash[id], user = options.user;
-			if(d){
-				d.initMember = false;
-				ajax({
-					type: "post",
-					cache: false,
-					url: route( "leave" ),
-					data: {
-						ticket: options.ticket,
-						id: id,
-						nick: user.nick, 
-						csrf_token: webim.csrf_token
-					}
-				});
-				self.trigger("leave",[d]);
-			}
-		},
+        updateMember: function(room_id, data) {
+			var room = this.dataHash[room_id];
+            if(room) {
+                room.memberLoaded = true;
+                room.members = data;
+                this.set([room]);
+            }
+        },
+
+        onPresence: function(presence) {
+			var self = this, tp = presence.type;
+            if( (tp == "join") || (tp == "leave") ) {
+                var roomId = presence.to || presence.status;
+                var oneRoom = this.dataHash[roomId];
+                if(oneRoom && oneRoom.memberLoaded) {
+                    //alert("reloading " + roomId);
+                    self.loadMember(roomId);
+                }
+                if(tp == "join") {
+                    self.trigger("memberJoined", [roomId, presence]);
+                } else {
+                    self.trigger("memberLeaved", [roomId, presence]);
+                }
+            }
+        },
+
 		clear:function(){
 			var self = this;
 			self.data = [];
@@ -2158,14 +2192,14 @@ model("history", {
 } );
 })(window, document);
 /*!
- * Webim UI v5.1 
+ * Webim UI v5.4 
  * http://www.webim20.cn/
  *
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Mon Jan 20 12:40:36 2014 +0800
- * Commit: 1c512668d4f3b4434160bf37deeeacf9d7f9b742
+ * Date: Fri Apr 18 16:33:45 2014 +0800
+ * Commit: f624aa19f33d55e469361fbc5615a7d8e6f99c88
  */
 (function(window,document,undefined){
 
@@ -2650,7 +2684,13 @@ var sound = (function(){
 		init: function(urls){
 			extend(_urls, urls);
 			if(!window.Audio && navigator.userAgent.indexOf('MSIE') >= 0){
-				document.getElementById('webim-flashlib-c').innerHTML = '<bgsound id="webim-bgsound" src="#" loop="1">';
+                var soundEl = document.createElement('bgsound');
+                soundEl.id = 'webim-bgsound';
+                soundEl.src = '#';
+                soundEl.autostart='true';
+                soundEl.loop = '1';
+				document.getElementById('webim-flashlib-c').appendChild(soundEl);
+                //.innerHTML = '<bgsound id="webim-bgsound" src="#" autostart="true" loop="1">';
 			}
 			/*
 			 swfobject.embedSWF(_urls.lib + "?_" + new Date().getTime(), "webim-flashlib-c", "100", "100", "9.0.0", null, null, {
@@ -2936,7 +2976,7 @@ function app(name, events){
 	webimUI.apps[name] = events || {};
 }
 extend(webimUI,{
-	version: "5.1 ",
+	version: "5.4 ",
 	widget: widget,
 	app: app,
 	plugin: plugin,
@@ -3334,14 +3374,18 @@ app("layout", function( options ) {
 	});
 
 	(function(){
-		//room  events
-		room.bind("addMember", function(e, room_id, info){
+		//room  events TODO: Remove
+		room.bind("memberAdded", function(e, room_id, info){
 			var c = layout.chat("room", room_id);
 			c && c.addMember(info.id, info.nick, info.id == im.data.user.id);
-		}).bind("removeMember", function(e, room_id, info){
+		}).bind("memberRemoved", function(e, room_id, info){
 			var c = layout.chat("room", room_id);
 			c && c.removeMember(info.id, info.nick);
-		});
+		}).bind("updated", function(e, data){ //room data
+			var c = layout.chat("room", data.id);
+            c && c.updateRoom(data);
+        
+        });
 	})();
 
 	//all ready.
@@ -4304,11 +4348,24 @@ app( "chat", function( options ) {
 		setTimeout( function(){
 			if( chatUI.options.info.blocked )
 				room.join( id );
-			else room.initMember( id );
+			else room.loadMember( id );
 		}, 500 );
 		isArray( info.members ) && each( info.members, function( n, info ){
-			chatUI.addMember( info.id, info.nick, info.id == im.data.user.id );
+			chatUI.addMember( info.id, info.nick, info.presence != "online" );
 		} );
+
+        /**
+         * notice member leaved or joined
+         */
+        room.bind("memberLeaved", function(e, roomId, presence) {
+            if(roomId == id) {
+                chatUI.notice(i18n("user leaved notice", {"name": presence.nick}), 5000);
+            }
+        }).bind("memberJoined", function(e, roomId, presence){
+            if(roomId == id) {
+                chatUI.notice(i18n("user joined notice", {"name": presence.nick}), 5000);
+            }
+        });
 
 	} else {
 		var h = history.get( "chat", id );
@@ -4419,7 +4476,7 @@ widget("chat",{
 			self._updateInfo(info);
 		}
 		var userOn = self.options.user.presence == "online";
-		var buddyOn = self.options.info.presence == "online";
+		var buddyOn = (self.options.info.presence == "online") && (self.options.info.show != "invisible");
 		if(!userOn){
 			self.notice(i18n("user offline notice"));
 		}else if(!buddyOn){
@@ -4768,18 +4825,32 @@ plugin.add("chat","block",{
 });
 webimUI.chat.defaults.member = true;
 extend(webimUI.chat.prototype, {
+    updateRoom: function(room) {
+        var self = this, ul = self.$.member;
+        while (ul.hasChildNodes()) {
+            ul.removeChild(ul.lastChild);
+        }
+        self.memberLi = {};
+        self.$.memberCount.innerHTML = "0";
+        each(room.members, function(k, v) {
+            self.addMember(v.id, v.nick, v.presence == "offline");
+        });
+    },
+
 	addMember: function(id, nick, disable){
 		var self = this, ul = self.$.member, li = self.memberLi;
 		if(li[id])return;
 		var el = createElement('<li><a class="'+ (disable ? 'ui-state-disabled' : '') +'" href="'+ id +'">'+ nick +'</a></li>');
 		addEvent(el.firstChild,"click",function(e){
 			preventDefault(e);
-			disable || self.trigger("select", [{id: id, nick: nick}]);
+            //5.4.2 fixec: disable || 
+			self.trigger("select", [{id: id, nick: nick}]);
 		});
 		li[id] = el;
 		self.$.member.appendChild(el);
 		self.$.memberCount.innerHTML = parseInt(self.$.memberCount.innerHTML) + 1;
 	},
+
 	removeMember: function(id){
 		var self = this, el = self.memberLi[id];
 		if(el){
@@ -4873,7 +4944,7 @@ widget("setting",{
 		//this._initEvents();
 		var copyright = this.options.copyright;	
 		if( copyright ) {
-			copyright = copyright === true ? '<p style="margin: 5px 10px;text-align:right;"><a class="webim-gray" href="http://nextalk.im/" target="_blank">Powered by NextTalk</a></p>' : copyright;
+			copyright = copyright === true ? '<p style="margin: 5px 10px;"><a class="webim-gray" href="http://nextalk.im/" target="_blank">Powered by <strong>NexTalk</strong><em>&nbsp5.4.1</em></a></p>' : copyright;
 			this.element.appendChild(createElement(copyright));
 		}
 	},
@@ -5209,8 +5280,12 @@ app("buddy", function( options ){
 	var grepVisible = function(a){ return a.show != "invisible" && a.presence == "online"};
 	var grepInvisible = function(a){ return a.show == "invisible"; };
 	//some buddies online.
-	buddy.bind("online", function( e, data){
-		buddyUI.add(grep(data, grepVisible));
+	buddy.bind("online", function( e, data) {
+		if ( options.showUnavailable ) {
+            buddyUI.add(data);
+        } else {
+            buddyUI.add(grep(data, grepVisible));
+        }
 		buddyUI.update(data);
 	});
 	//some buddies offline.
@@ -5222,12 +5297,18 @@ app("buddy", function( options ){
 		} else {
 			buddyUI.remove(map(data, mapId));
 		}
+        
 	});
 	//some information has been modified.
 	buddy.bind( "update", function( e, data){
-		buddyUI.add(grep(data, grepVisible));
-		buddyUI.update(grep(data, grepVisible));
-		buddyUI.remove(map(grep(data, grepInvisible), mapId));
+		if ( options.showUnavailable ) {
+            buddyUI.add(data);
+            buddyUI.update(data);
+        } else { 
+            buddyUI.add(grep(data, grepVisible));
+            buddyUI.update(grep(data, grepVisible));
+            buddyUI.remove(map(grep(data, grepInvisible), mapId));
+        }
 	} );
 	buddyUI.offline();
 	im.bind( "beforeOnline", function(){
@@ -5262,7 +5343,15 @@ widget("buddy",{
 		};
 		self.li_group = {
 		};
+        //added in 5.4
+        self.on_li = {
+        };
+        self.on_li_group = {
+        };
 		self.size = 0;
+        //id: "online" | "offline"
+        self.presences = {
+        }
 		if(options.disable_group){
 			addClass(self.element, "webim-buddy-hidegroup");
 		}
@@ -5286,11 +5375,26 @@ widget("buddy",{
 			if(this.value == "")this.value = placeholder;
 		});
 		addEvent(input, "keyup", function(){
-			var list = self.li, val = this.value;
-			each(self.li, function(n, li){
-				if(val && (li.text || li.innerHTML.replace(/<[^>]*>/g,"")).indexOf(val) == -1) hide(li);
-				else show(li);
-			});
+			var val = this.value;
+            if(val == undefined || val == "") {
+                //show all when finished
+                each(self.groups, function(n, grp) { show(grp.el) });
+                each(self.on_li, function(n,li) { show(li); });
+                each(self.li, function(n,li) { show(li); });
+            } else {
+                //hide all first
+                each(self.groups, function(n, grp) { hide(grp.el) });      
+                each(self.on_li, function(n,li) { hide(li); });
+                each(self.li, function(n,li) { hide(li); });
+                //show searched
+                each(self.li, function(id, li){
+                     if ( (li.text || li.innerHTML.replace(/<[^>]*>/g, "")).indexOf(val) >= 0 ) {
+                         var grp = self.li_group[id];
+                         if(grp) show(grp.el);
+                         show(li);
+                     }
+                });
+            }
 		});
 /*
 var a = $.online.firstChild;
@@ -5306,9 +5410,12 @@ self.trigger("offline");
 */
 
 	},
+    //FIXME Later: should be moved to model...
 	titleCount: function(){
 		var self = this, size = self.size, win = self.window, empty = self.$.empty, element = self.element;
-		win && win.title(self.options.title + "(" + (size ? size : "0") + ")");
+        var ol_sz = 0;
+        each(self.presences, function(id, p) { if(p.o) ol_sz++; });
+		win && win.title(self.options.title + "(" + ol_sz + "/" + (size ? size : "0") + ")");
 		if(!size){
 			show(empty);
 		}else{
@@ -5320,6 +5427,20 @@ self.trigger("offline");
 			self.scroll(false);
 		}
 	},
+
+    //FIXME Later: should be moved to model...
+    groupTitleCount: function(grp) {
+        var self = this, oncnt = 0;
+        if(grp.name == i18n("online_group")) {
+            grp.title.innerHTML = grp.name + "(" + grp.count+")";
+        } else {
+            each(self.presences, function(id, p) { 
+                if(p.o && p.g == grp.name) oncnt++; 
+            });
+            grp.title.innerHTML = grp.name + "(" + oncnt + "/" + grp.count+")";
+        }
+    },
+
 	scroll:function(is){
 		toggleClass(this.element, "webim-buddy-scroll", is);
 	},
@@ -5358,6 +5479,7 @@ self.trigger("offline");
 		var self = this, $ = self.$, win = self.window;
 		self.scroll(false);
 		self.removeAll();
+        self.presences = {};
 		hide( $.empty );
 		self.notice("offline");
 	},
@@ -5387,13 +5509,30 @@ self.trigger("offline");
 			_countDisplay( li[id].firstChild.firstChild, count );
 		}
 	},
-	_addOne:function(info, end){
-		var self = this, li = self.li, id = info.id, ul = self.$.ul;
+    isOnline: function(show) {
+        return !((show == "unavailable") || (show == "invisible"));
+    },
+	_addOne:function(info, end) {
+		var self = this, li = self.li, on_li = self.on_li, li_group = self.li_group, on_li_group = self.on_li_group;
+        info.show = info.show || "available";
+        if(self.options.online_group && self.isOnline(info.show)) {
+            this._addOne2Grp(info, on_li, "online_group", on_li_group, false);
+        }
+        var group_name = info["group"] || "friend";
+        this._addOne2Grp(info, li, group_name, li_group, end);
+    },
+
+    _addOne2Grp:function(info, li, group_name, li_group, end) {
+		var self = this, id = info.id, ul = self.$.ul, on_li = self.on_li;
 		if(!li[id]){
-			self.size++;
+			if(li === self.li) {
+                //to count online 
+                self.presences[info.id] = {o: self.isOnline(info.show), g: i18n(group_name)};
+                self.size++;
+            }
 			if(!info.default_pic_url)info.default_pic_url = "";
 			info.status = stripHTML(info.status) || "&nbsp;";
-			info.show = info.show || "available";
+			//info.show = info.show || "available";
 			info.human_show = i18n(info.show);
 			info.pic_url = info.pic_url || "";
 			var el = li[id] = createElement(tpl(self.options.tpl_li, info));
@@ -5405,19 +5544,24 @@ self.trigger("offline");
 				self.trigger("select", [info]);
 				this.blur();
 			});
-			var groups = self.groups, group_name = i18n(info["group"] || "friend"), group = groups[group_name];
+			var groups = self.groups, group_name = i18n(group_name), group = groups[group_name];
 			if(!group){
 				var g_el = createElement(tpl(self.options.tpl_group));
 				hide( g_el );
 				if(group_name == i18n("stranger")) end = true;
-				if(end) {
-					ul.appendChild(g_el);
-					self._lastChild = g_el;
-				} else {
-					self._lastChild ? 
-						ul.insertBefore(g_el, ul.lastChild) :
-						ul.appendChild(g_el);
-				}
+                if(group_name == i18n("online_group")) {
+                    //insert firstchild
+                    ul.insertBefore(g_el, ul.firstChild);
+                } else {
+                    if(end) {
+                        ul.appendChild(g_el);
+                        self._lastChild = g_el;
+                    } else {
+                        self._lastChild ? 
+                            ul.insertBefore(g_el, ul.lastChild) :
+                            ul.appendChild(g_el);
+                    }
+                }
 				var li_el = g_el.lastChild
 				  , trigger = g_el.firstChild
 				  , _icon = trigger.firstChild
@@ -5429,6 +5573,7 @@ self.trigger("offline");
 					name: group_name,
 					el: g_el,
 					count: 0,
+                    online_count: 0,
 					title: g_el.firstChild.lastChild,
 					li: li_el
 				};
@@ -5452,21 +5597,30 @@ self.trigger("offline");
 				}
 			}
 			if(group.count == 0) show(group.el);
-			self.li_group[id] = group;
+			li_group[id] = group;
 			group.li.appendChild(el);
 			group.count++;
-			group.title.innerHTML = group_name + "("+ group.count+")";
+            self.groupTitleCount(group);
 		}
 	},
+
 	_updateOne:function(info){
-		var self = this, li = self.li, id = info.id;
+		var self = this, li = self.li, on_li = self.on_li, id = info.id;
 		li[id] && self._updateInfo(li[id], info);
+        on_li[id] && self._updateInfo(on_li[id], info);
+        //added in 5.4... count online
+        var show = info.show || "available";
+        var group_name = i18n(info.group || "friend");
+        var group = self.groups[group_name];
+        if(group) { self.groupTitleCount(group); }
+        self.presences[info.id] = {o: self.isOnline(show), g: group_name};
 	},
 	update: function(data){
 		data = makeArray(data);
 		for(var i=0; i < data.length; i++){
 			this._updateOne(data[i]);
 		}
+		this.titleCount();
 	},
 	add: function(data, end){
 		data = makeArray(data);
@@ -5481,28 +5635,36 @@ self.trigger("offline");
 			ids.push(k);
 		}
 		this.remove(ids);
-		this.titleCount();
+		//this.titleCount();
 	},
 	remove: function(ids){
 		var self = this, id, el, li = self.li, group, li_group = self.li_group;
 		ids = idsArray(ids);
 		for(var i=0; i < ids.length; i++){
-			id = ids[i];
-			el = li[id];
-			if(el){
-				self.size--;
-				group = li_group[id];
-				if(group){
-					group.count --;
-					if(group.count == 0)hide(group.el);
-					group.title.innerHTML = group.name + "("+ group.count+")";
-				}
-				remove(el);
-				delete(li[id]);
-			}
+            var id = ids[i];
+            self._removeOne(id, self.on_li, self.on_li_group);
+            self._removeOne(id, self.li, self.li_group);
 		}
 		self.titleCount();
 	},
+    _removeOne: function(id, li, li_group) {
+        var self = this, el = li[id];
+        if(el){
+            if(li == self.li) {
+                self.size--;
+                delete(self.presences[id]);
+            }
+            group = li_group[id];
+            if(group){
+                group.count--;
+                if(group.count == 0)hide(group.el);
+                self.groupTitleCount(group);
+            }
+            remove(el);
+            delete(li[id]);
+        }
+    },
+    
 	select: function(id){
 		var self = this, el = self.li[id];
 		el && el.firstChild.click();
@@ -5564,30 +5726,13 @@ app("room", function( options ) {
 		layout.focusChat("room", info.id);
 	}).bind("discussion", function( e, info, buddies ){
 		info.id = info.id || ruid();
-		room.join( info.id, info.nick, function(){
+		room.invite( info.id, info.nick, buddies, function(){
 			layout.addChat("room", info.id);
 			layout.focusChat("room", info.id);
 		} );
-		for (var i = 0; i < buddies.length; i++) {
-			var id = buddies[i];
-			var msg = {
-				type: "chat"
-			  , to: id
-			  , from: im.data.user.id
-			  , nick: im.data.user.nick
-			  , to_nick: buddy.get(id) && buddy.get(id).nick
-			  , timestamp: (new Date()).getTime()
-			  , body: "webim-event:invite|,|" + info.id + "|,|" + info.nick
-			};
-			(function(msg, i){
-				setTimeout(function(){
-					im.sendMessage( msg );
-				}, i*500);
-			})(msg, i);
-		};
 	}).bind("exit", function(e, id){
-		room.block( id );
-		layout.removeChat("room",id);
+		room.leave( id );
+		layout.removeChat("room", id);
 	});
 	im.bind("event", function( e, events ) {
 		for (var i = 0; i < events.length; i++) {
@@ -5595,6 +5740,7 @@ app("room", function( options ) {
 			if( event && event[0] == "invite" ) {
 				var id = event[1];
 				room.join( id, event[2], function(){
+                    //TODO: no need this callback?
 					//layout.addChat("room", id);
 				} );
 			}
@@ -5610,65 +5756,33 @@ app("room", function( options ) {
 	im.setting.bind("update",function(e, key, val){
 		if(key == "buddy_sticky")roomUI.window.options.sticky = val;
 	});
-	room.bind("join",function( e, info){
+	room.bind("updated",function(e, info){
+        //FIXME: info is a room list??
 		updateRoom(info);
-		//Save temporary room
-		if( info.temporary ) {
-			var data = []
-			  , list = setting.get("temporary_rooms") || []
-			  , has = false, up = false;
-			for (var i = 0; i < list.length; i++) {
-				if( list[i].id == info.id ) {
-					has = true;
-					up = list[i].nick != info.nick;
-					list[i].nick = info.nick;
-				}
-				data.push( list[i] );
-			};
-			if( !has )
-				data.push({id: info.id, nick: info.nick});
-			if( !has || up )
-				setting.set("temporary_rooms",data);
-		}
-	}).bind("leave", function( e, info){
-		//Remove temporary room
-		if( info.temporary ) {
-			var data = []
-			  , list = setting.get("temporary_rooms") || []
-			  , has = false;
-			for (var i = 0; i < list.length; i++) {
-				if( list[i].id == info.id )
-					has = true;
-				else
-					data.push( list[i] );
-			};
-			if( has )
-				setting.set("temporary_rooms",data);
-			roomUI.remove( info.id );
-		}
-
-	}).bind("block", function( e, id, list){
+	}).bind("leaved", function(e, id){
+        //TODO:
+        roomUI.remove([id]);
+		//updateRoom(info);
+	}).bind("blocked", function( e, id, list){
 		var info = room.get(id);
-		setting.set("blocked_rooms",list);
 		updateRoom(info);
-		room.leave(id);
-	}).bind("unblock", function( e, id, list){
+		//room.leave(id);
+	}).bind("unblocked", function( e, id, list){
 		var info = room.get(id);
-		setting.set("blocked_rooms",list);
 		updateRoom(info);
-		room.join(id, info && info.nick);
-	}).bind("addMember", function( e, room_id, info){
-		updateRoom(room.get(room_id), true);
-	}).bind("removeMember", function( e, room_id, info){
-		updateRoom(room.get(room_id), true);
+		//room.join(id, info && info.nick);
 	});
 	//room
-	function updateRoom(info, ignore){
+	function updateRoom(info){
 		var nick = info.nick;
-		info = extend({},info,{group:"group", nick: nick + "(" + (parseInt(info.count) + "/"+ parseInt(info.all_count || info.count)) + ")"});
+        if(info.all_count === 0) {
+            info = extend({}, info, {group:"group", nick: nick});
+        } else {
+            info = extend({},info,{group:"group", nick: nick + "(" + (parseInt(info.count) + "/"+ parseInt(info.all_count || info.count)) + ")"});
+        }
 		layout.updateChat(info);
 		info.blocked && (info.nick = nick + "(" + i18n("blocked") + ")");
-		roomUI.li[info.id] ? roomUI.update(info) : ( !ignore && roomUI.add(info) );
+		roomUI.li[info.id] ? roomUI.update(info) : roomUI.add(info);
 	}
 	hide( roomUI.$.actions );
 	im.bind( "beforeOnline", function(){
@@ -5860,13 +5974,15 @@ widget("room",{
 		var self = this
 		  , buddy = self.options.buddy
 		  , markup = []
-		  , buddies = buddy.all(true);
+          //all buddies
+		  , buddies = buddy.all(); 
 		self._discussion = info;
 		var $ = this.$;
-		$.name.value = info && info.nick.replace(/\([^\)]*\)/ig, "") || (self.options.user.nick + "的讨论组");
+		$.name.value = info && info.nick.replace(/\([^\)]*\)/ig, "") || (i18n("discussion name input", {name: self.options.user.nick}));
 		for (var i = 0; i < buddies.length; i++) {
 			var b = buddies[i];
-			markup.push('<li><label for="webim-discussion-'+b.id+'"><input id="webim-discussion-'+b.id+'" type="checkbox" name="buddy" value="'+b.id+'" />'+b.nick+'</label></li>');
+            var clz = b.show && (b.show == "unavailable" || b.show == "hidden") ? "ui-state-disabled" : "";
+			markup.push('<li class="'+clz+'"><label for="webim-discussion-'+b.id+'"><input id="webim-discussion-'+b.id+'" type="checkbox" name="buddy" value="'+b.id+'" />'+b.nick+'</label></li>');
 		};
 		$.ul2.innerHTML = markup.join("");
 		show( $.discussion );
@@ -6010,7 +6126,7 @@ app("chatlink", function(options){
 	});
 
 	im.bind("beforeOnline", function( e, params ){
-		params.stranger_ids = chatlink.idsArray();
+		params.chatlink_ids = chatlink.idsArray();
 	}).bind("online", function(e){
 		chatlink.remove(im.data.user);
 	}).bind("offline", function(e){
@@ -6134,6 +6250,168 @@ widget("chatlink",
 		each(this.list, function(k, v){
 			v.elements && each(v.elements, function(n, el){
 				remove(el);
+			});
+		});
+	}
+}
+);
+/* 
+ * ui.chatbtn
+ *
+ * HTML页面:
+ * <a class="webim-chatbtn" href="/chat/2">和我聊天</a>
+ *
+ * webim.$product.js:
+ *
+ * ui.addApp("chatbtn", {
+ *  wrap: document.getElementById('wrap')
+ *	elementId: null,
+ * 	className: /webim-chatbtn/,
+ *  autoInsertlink: true
+ * });
+ * 
+ * TODO: 支持群组Link
+ *
+ * options:
+ * methods:
+ * 	on(buddies)
+ * 	off(buddies)
+ * 	idsArray()
+ * 	offAll()
+ * 	destroy()
+ * 
+ * events: 
+ * 	select
+ * 
+ */
+
+app("chatbtn", function(options){
+	var ui = this, im = ui.im;
+	var chatbtn = ui.chatbtn = new webim.ui.chatbtn(null, options).bind("select", function(e, id){
+		ui.im.online();
+        id = id.substr("webim-chatid-".length);
+		ui.layout.addChat("buddy", id);
+		ui.layout.focusChat("buddy", id);
+		if( options && options.autoInsertlink ) {
+			var chat = ui.layout.chat( "buddy", id );
+			chat && chat.insert( window.location.href );
+		}
+	});
+	var grepVisible = function(a){ return a.show != "invisible" && a.presence == "online"};
+	var grepInvisible = function(a){ return a.show == "invisible" };
+	im.buddy.bind("online",function(e, data){
+		chatbtn.on(grep(data, grepVisible));
+	}).bind("update",function(e, data){
+		chatbtn.on(grep(data, grepVisible));
+		chatbtn.off(grep(data, grepInvisible));
+	}).bind("offline",function(e, data){
+		chatbtn.off(data);
+	});
+
+	im.bind("beforeOnline", function( e, params ){
+		params.chatlink_ids = chatbtn.idsArray();
+	}).bind("online", function(e){
+		chatbtn.off(im.data.user);
+	}).bind("offline", function(e){
+		chatbtn.offAll();
+	});
+});
+
+widget("chatbtn",
+{
+	wrap: null,
+	re_id: [/chat\/([^\/]+)/i],
+	elementId: null,
+	className: /webim-chatbtn/
+},
+{
+	_init: function(){
+		var self = this, element = self.element, list = self.list = {}, 
+			options = self.options, anthors = self.anthors = {}, 
+			re_id = options.re_id, 
+			elementId = options.elementId, 
+			className = options.className,
+			wrap = options.wrap || document;
+
+		function parse_id(link, re){
+			if(!link)return false;
+			if(!re)return false;
+			var re_len = re.length; 
+			for(var i = 0; i < re_len; i++){
+				var ex = re[i].exec(link);
+				if(ex && ex[1]){
+					return ex[1];
+				}
+			}
+			return false;
+		}
+		var a, b;
+		if( elementId ) {
+			a = document.getElementById( elementId );
+			a = a ? [ a ] : null;
+		} else {
+			a = wrap.getElementsByTagName("a");
+		}
+		a && each(a, function(i, el){
+			var id = parse_id(el.href, re_id), text = el.innerHTML;
+			if(id && children(el).length == 0 && text && (elementId || className.test(el.className))){
+				anthors[id] ? anthors[id].push(el) :(anthors[id] = [el]);
+				list[id] = {id: id, name: text};
+				var icon = createElement('<i class="webim-chaticon"><em>');;
+				el.appendChild( icon );
+				el.icon = icon;
+				el.title = i18n("offline");
+				el.id = 'webim-chatid-' + id;
+				addEvent(el, "click", function(e){
+					self.trigger("select", this.id);
+					stopPropagation(e);
+					preventDefault(e);
+				});
+			}
+		});
+	},
+	idsArray: function(){
+		var _ids = [];
+		each(this.list, function(k,v){_ids.push(k)});
+		return _ids;
+	},
+	on: function(data){
+		var self = this, list = self.list, anthors = self.anthors, l = data.length, i, da, uid, li, anthor;
+		for(i = 0; i < l; i++){
+			da = data[i];
+			if(da.id && (uid = da.uid || da.id) && (li = list[uid])){
+				anthor = anthors[uid];
+				if(anthor){
+					for(var j = 0; j < anthor.length; j++){
+						var el = anthor[j];
+						el && el.icon && addClass( el.icon, "webim-chaticon-online");
+						el && ( el.title = i18n("available") );
+					}
+				}
+			}
+		}
+	},
+	off: function(data){
+		var self = this, list = self.list, anthors = self.anthors, l = data.length, i, da, uid, li, anthor;
+		for(i = 0; i < l; i++){
+			da = data[i];
+			if(da.id && (uid = da.uid || da.id) && (li = list[uid])){
+				anthor = anthors[uid];
+				if(anthor){
+					for(var j = 0; j < anthor.length; j++){
+						var el = anthor[j];
+						el && el.icon && removeClass( el.icon, "webim-chaticon-online");
+						el && ( el.title = i18n("unavailable") );
+					}
+				}
+			}
+		}
+	},
+	offAll: function(){
+		each(this.anthors, function(k, v){
+			v && each(v, function(n, el){
+				el && el.icon && removeClass( el.icon, "webim-chaticon-online");
+				el && ( el.title = i18n("unavailable") );
 			});
 		});
 	}
@@ -6313,10 +6591,10 @@ app("layout.popup", function( options ) {
 
 	(function(){
 		//room  events
-		room.bind("addMember", function(e, room_id, info){
+		room.bind("memberAdded", function(e, room_id, info){
 			var c = layout.chat("room", room_id);
-			c && c.addMember(info.id, info.nick, info.id == im.data.user.id);
-		}).bind("removeMember", function(e, room_id, info){
+			c && c.addMember(info.id, info.nick, info.presence == "offline");
+		}).bind("memberRemoved", function(e, room_id, info){
 			var c = layout.chat("room", room_id);
 			c && c.removeMember(info.id, info.nick);
 		});
