@@ -18,17 +18,18 @@ namespace Spacebuilder.Webim
     /// <summary>
     /// 访客仓储接口
     /// </summary>
-    public class VisitoryRepository : Repository<VisitoryEntity>, IVisitorRepository
+    public class VisitorRepository : Repository<VisitorEntity>, IVisitorRepository
     {
         public VisitorEntity Find(string vid) 
         {
             return null;
         }
 
-        IEnumerable<VisitorEntity> FindByIds(IEnumerable<string> vids)
+        public IEnumerable<VisitorEntity> FindByIds(IEnumerable<string> vids)
         {
             return new List<VisitorEntity>();   
         }
+
     }
 }
 

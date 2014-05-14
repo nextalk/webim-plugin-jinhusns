@@ -30,8 +30,10 @@ namespace Spacebuilder.Webim
         IEnumerable<RoomEntity> Rooms(string uid, IEnumerable<string> ids);
 
         void Remove(string name);
-        
-	}
+
+
+        int MemberCount(string room);
+    }
 
 
 }

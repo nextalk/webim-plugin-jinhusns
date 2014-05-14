@@ -21,7 +21,7 @@ namespace Spacebuilder.Webim
 
         IMemberRepository memberRepository;
 
-        IBlockRepository blockRepository;
+        IBlockedRepository blockRepository;
 
         IVisitorRepository visitorRepository;
 
@@ -35,7 +35,7 @@ namespace Spacebuilder.Webim
 
             memberRepository = new MemberRepository();
 
-            blockRepository = new BlockRepository();
+            blockRepository = new BlockedRepository();
 
             visitorRepository = new VisitorRepository();
 
@@ -77,7 +77,7 @@ namespace Spacebuilder.Webim
          */
         public IEnumerable<WebimHistory> Histories(string uid, string with, string type = "chat", int limit = 50)
         {
-            return historyRepository.GetHistories(uid, with, type, limit);
+            return (from h in historyRepository.GetHistories(uid, with, type, limit) select Mapping(h));
         }
 
         /**
@@ -92,14 +92,14 @@ namespace Spacebuilder.Webim
          */
         public IEnumerable<WebimHistory> OfflineHistories(string uid, int limit = 50)
         {
-            return historyRepository.GetOfflineMessages(uid, limit);
+            return (from e in historyRepository.GetOfflineMessages(uid, limit) select Mapping(e));
         }
 
         public void InsertHistory(string uid, WebimMessage msg)
         {
             HistoryEntity entity = HistoryEntity.New();
             entity.FromUser = uid;
-            entity.Send = (offline == "true" ? 0 : 1);
+            entity.Send = (msg.Offline ? 0 : 1);
             entity.Nick = msg.Nick;
             entity.Type = msg.Type;
             entity.ToUser = msg.To;
@@ -184,7 +184,7 @@ namespace Spacebuilder.Webim
          * @param data
          *            配置数据，JSON格式
          */
-        public void SaveSetting(long uid, string data)
+        public void SaveSetting(string uid, string data)
         {
             settingRepository.Set(uid, data);
         }
@@ -236,6 +236,11 @@ namespace Spacebuilder.Webim
             return (from m in memberRepository.AllInRoom(room) select Mapping(m));
         }
 
+        private WebimMember Mapping(MemberEntity m)
+        {
+            return new WebimMember(m.Uid, m.Nick);
+        }
+
         /**
          * 创建临时讨论组
          * 
@@ -262,7 +267,7 @@ namespace Spacebuilder.Webim
         public void InviteRoom(string room, IEnumerable<WebimEndpoint> members)
         {
             foreach(WebimEndpoint m in members) {
-                memberRepository.joinRoom(room, m.Id, m.Nick);
+                memberRepository.JoinRoom(room, m.Id, m.Nick);
             }
         }
 
@@ -275,7 +280,7 @@ namespace Spacebuilder.Webim
          */
         public void JoinRoom(string room, string uid, string nick)
         {
-            memberRepository.joinRoom(room, m.Id, m.Nick);
+            memberRepository.JoinRoom(room, uid, nick);
         }
 
         /**
@@ -287,7 +292,7 @@ namespace Spacebuilder.Webim
         public void LeaveRoom(string room, string uid)
         {
             memberRepository.LeaveRoom(room, uid);
-            if(roomRepository.memberCount(room) == 0) {
+            if(roomRepository.MemberCount(room) == 0) {
                 roomRepository.Remove(room);
             }
         }
@@ -300,7 +305,7 @@ namespace Spacebuilder.Webim
          */
         public void BlockRoom(string room, string uid)
         {
-            BlockEntity entity = BlockEntity.New();
+            BlockedEntity entity = BlockedEntity.New();
             entity.Uid = uid;
             entity.Room = room;
             blockRepository.Insert(entity);
@@ -362,19 +367,23 @@ namespace Spacebuilder.Webim
             return new List<WebimEndpoint>();
         }
 
-        private Dictionary<string, string> Mapping(HistoryEntity e)
-        {
-            Dictionary<string, string> data = new Dictionary<string, string>();
-            data["type"] = e.Type;
-            data["send"] = e.Send == 1 ? "true" : "false";
-            data["to"] = e.ToUser;
-            data["from"] = e.FromUser;
-            data["nick"] = e.Nick;
-            data["body"] = e.Body;
-            data["style"] = e.Style;
-            data["timestamp"] = e.Timestamp.ToString();
-            return data;
+        private WebimHistory Mapping(HistoryEntity e) {
+            WebimHistory h = new WebimHistory();
+            h.Type = e.Type;
+            h.Send = e.Send;
+             h.To = e.ToUser;
+             h.From = e.FromUser;
+            h.Nick = e.Nick;
+            h.Body = e.Body;
+            h.Style = e.Style;
+            h.Timestamp = e.Timestamp;
+         
+            return h;
         }
+
+      
+        
+     
 
         private WebimRoom Mapping(RoomEntity e) {
             return new WebimRoom(e.Name, e.Nick);

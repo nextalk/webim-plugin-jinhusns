@@ -21,24 +21,23 @@ namespace Spacebuilder.Webim
 
         public IEnumerable<MemberEntity> AllInRoom(string room)
         {
-            //TODO:
-            return new List<MemberEntity>();
-        }
-
-        public IEnumerable<RoomEntity> Rooms(string uid) 
-        {
-            //TODO:
-            return new List<MemberEntity>();
+            var sql = Sql.Builder;
+            sql.Select("*").From("spb_Webim_Members").Where("room = @0", room);
+            return CreateDAO().Fetch<MemberEntity>(sql);
         }
 
         public void JoinRoom(string room, string uid, string nick)
         {
-            //TODO:
+            MemberEntity e = MemberEntity.New();
+            e.Room = room;
+            e.Uid = uid;
+            e.Nick = nick;
+            base.Insert(e);
         }
 
         public void LeaveRoom(string room, string uid)
         {
-            //TODO:
+            CreateDAO().Execute("delete from spb_Webim_Members where room = @0 and uid = @1", room, uid);
         }
     
     }

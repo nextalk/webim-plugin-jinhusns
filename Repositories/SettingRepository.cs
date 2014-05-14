@@ -25,7 +25,7 @@ namespace Spacebuilder.Webim
         {
         }
 
-        public string Get(long uid)
+        public string Get(string uid)
         {
             string s = CreateDAO().FirstOrDefault<string>("select data from spb_Webim_Settings where uid = @0", uid);
             if (s == null) s = "{}";
@@ -33,7 +33,7 @@ namespace Spacebuilder.Webim
             return s;
         }
 
-        public void Set(long uid, string data)
+        public void Set(string uid, string data)
         {
             if (Get(uid) == "{}")
             {

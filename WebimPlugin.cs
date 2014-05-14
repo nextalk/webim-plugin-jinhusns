@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Tunynet;
+using Tunynet.Common;
+using Spacebuilder.Common;
+using Spacebuilder.Group;
 using Webim;
 
 namespace Spacebuilder.Webim
@@ -90,7 +94,7 @@ namespace Spacebuilder.Webim
         * @param roomId
         * @return WebimRoom
         */
-        public WebimRoom findRoom(string roomId)
+        public WebimRoom FindRoom(string roomId)
         {
             return Mapping(groupService.Get(long.Parse(roomId)));
         }
@@ -132,7 +136,7 @@ namespace Spacebuilder.Webim
         public IEnumerable<WebimRoom> RoomsByIds(string uid, IEnumerable<string> ids)
         {
             IEnumerable<long> gids = (from id in ids select long.Parse(id));
-            return Mapping(groupService.GetGroups(gids);
+            return (from g in groupService.GetGroupEntitiesByIds(gids) select Mapping(g));
         }
 
         /**

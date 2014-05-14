@@ -30,16 +30,16 @@ namespace Spacebuilder.Webim
         public static BlockedEntity New() 
         {
             BlockedEntity entity = new BlockedEntity();
-            entity.blocked = DateTime.Now;
+            entity.Blocked = DateTime.Now;
             return entity;
         }
 
 		#region 需要持久属性
 		public long Id { get; set; }
 
-		public long Uid { get; set; }
+		public string Uid { get; set; }
 
-		public long Room { get; set; }
+		public string Room { get; set; }
 
 		public DateTime Blocked { get; set; }
 		#endregion

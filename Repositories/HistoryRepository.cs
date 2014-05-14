@@ -22,7 +22,7 @@ namespace Spacebuilder.Webim
     public class HistoryRepository : Repository<HistoryEntity>, IHistoryRepository
     {
 
-        public IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type = "chat", int limit = 30)
+        public IEnumerable<HistoryEntity> GetHistories(string uid, string with, string type = "chat", int limit = 30)
         {
             Sql sql = Sql.Builder;
             if (type == "chat")
@@ -52,14 +52,14 @@ namespace Spacebuilder.Webim
             return PopulateEntitiesByEntityIds(list);
         }
 
-        public void ClearHistories(long uid, string with)
+        public void ClearHistories(string uid, string with)
         {
             CreateDAO().Execute("UPDATE spb_Webim_Histories SET fromdel = 1 Where fromuser = @0 and touser = @1 and type = 'chat'", uid.ToString(), with);
             CreateDAO().Execute("UPDATE spb_Webim_Histories SET todel = 1 Where touser = @0 and fromuser = @1 and type = 'chat'", uid.ToString(), with);
             CreateDAO().Execute("DELETE FROM spb_Webim_Histories WHERE fromdel = 1 AND todel = 1");
         }
 
-        public IEnumerable<HistoryEntity> GetOfflineMessages(long uid, int limit = 50)
+        public IEnumerable<HistoryEntity> GetOfflineMessages(string uid, int limit = 50)
         {
             //"SELECT * FROM  spb_Webim_Histories WHERE `to` = ? and send != 1 ORDER BY timestamp DESC LIMIT %d", limit;
 
@@ -73,7 +73,7 @@ namespace Spacebuilder.Webim
             return PopulateEntitiesByEntityIds(list);
         }
 
-        public void OfflineMessageToHistory(long uid)
+        public void OfflineMessageToHistory(string uid)
         {
             //"UPDATE spb_Webim_Histories SET send = 1 where touser = ? and send = 0"); uid
             CreateDAO().Execute("UPDATE spb_Webim_Histories SET send = 1 where touser = @0 and send = 0", uid.ToString());

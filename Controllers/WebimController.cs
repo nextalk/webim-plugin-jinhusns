@@ -8,10 +8,15 @@ using System.Diagnostics;
 using System.Json;
 using Spacebuilder.Webim;
 using System.Configuration;
+using Tunynet.Utilities;
+using Tunynet.Common;
 using Webim;
 
 namespace Spacebuilder.Webim.Controllers
 {
+    /// <summary>
+    /// Webim控制器
+    /// </summary>
     public class WebimController : Controller
     {
 
@@ -23,6 +28,9 @@ namespace Spacebuilder.Webim.Controllers
 
         private WebimEndpoint endpoint = null;
 
+        /// <summary>
+        /// Webim控制器
+        /// </summary>
         public WebimController()
         {
             this.model = new WebimModel();
@@ -66,8 +74,7 @@ namespace Spacebuilder.Webim.Controllers
             if (!int.TryParse(ConfigurationManager.AppSettings["IISVersion"], out iisVersion))
                 iisVersion = 7;
             bool aspx = iisVersion < 7;
-            IUser user = UserContext.CurrentUser;
-            string setting = webimService.GetSetting(user.UserId);
+            string setting = model.GetSetting(CurrentUid());
             string body = string.Format(@"var _IMC = {{
 	            product: 'jinhusns',
 	            version: '5.4.2',
@@ -107,8 +114,7 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult Online()
         {
             //当前用户登录
-            IUser user = UserContext.CurrentUser;
-            if (user == null)
+            if (this.endpoint == null)
                 return Json(
                     new { success = false, error = "尚未登录" },
                     JsonRequestBehavior.AllowGet
@@ -277,7 +283,7 @@ namespace Spacebuilder.Webim.Controllers
         {
             WebimClient c = CurrentClient(Request["ticket"]);
             string roomId = Request["id"];
-            WebimRoom room = this.plugin.findRoom(roomId);
+            WebimRoom room = this.plugin.FindRoom(roomId);
             IEnumerable<WebimMember> members = null;
             if (room != null)
             {

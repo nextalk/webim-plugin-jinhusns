@@ -24,8 +24,6 @@ namespace Spacebuilder.Webim
 
         IEnumerable<MemberEntity> AllInRoom(string room);
 
-        IEnumerable<RoomEntity> Rooms(string uid);
-
         void JoinRoom(string room, string uid, string nick);
 
         void LeaveRoom(string room, string uid);
