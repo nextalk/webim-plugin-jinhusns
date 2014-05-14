@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -22,8 +23,8 @@ using Tunynet;
 //    [Timestamp] [bigint] NULL,
 //    [ToDel] [tinyint] NOT NULL,
 //    [FromDel] [tinyint] NOT NULL,
-//    [CreatedAt] [date] NULL,
-//    [UpdatedAt] [date] NULL,
+//    [Created] [date] NULL,
+//    [Updated] [date] NULL,
 // CONSTRAINT [PK_spb_Webim_Histories] PRIMARY KEY CLUSTERED 
 //(
 //    [Id] ASC
@@ -41,8 +42,8 @@ namespace Spacebuilder.Webim
 		public static HistoryEntity New()
 		{
 			HistoryEntity entity = new HistoryEntity();
-			entity.CreatedAt = DateTime.Now;
-            entity.UpdatedAt = DateTime.Now;
+			entity.Created = DateTime.Now;
+            entity.Updated = DateTime.Now;
 			return entity;
 		}
 
@@ -69,9 +70,9 @@ namespace Spacebuilder.Webim
 
 		public int FromDel { get; set; }
 
-		public DateTime CreatedAt { get; set; }
+		public DateTime Created { get; set; }
 
-		public DateTime UpdatedAt { get; set; }
+		public DateTime Updated { get; set; }
 
 		#endregion
 

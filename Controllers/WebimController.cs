@@ -12,6 +12,7 @@ using Spacebuilder.Common;
 using Spacebuilder.Group;
 using Tunynet.Utilities;
 using System.Configuration;
+using Webim;
 
 namespace Spacebuilder.Webim.Controllers
 {
@@ -21,6 +22,21 @@ namespace Spacebuilder.Webim.Controllers
         //TODO: There should be userService, groupService and FollowService
 
         private WebimService webimService = new WebimService();
+
+        private WebimModel model = null;
+
+        private WebimPlugin plugin = null;
+
+        private WebimClient client = null;
+
+        private WebimEndpoint endpoint = null;
+
+        public WebimController()
+        {
+            this.model = new WebimModel();
+            this.plugin = new WebimPlugin();
+            this.endpoint = this.plugin.Endpoint();
+        }
 
         private WebimEndpoint CurrentEndpoint()
         {

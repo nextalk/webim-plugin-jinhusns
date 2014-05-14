@@ -25,10 +25,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp
 BEGIN
 CREATE TABLE [dbo].[spb_Webim_Settings](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[Uid] [bigint] NOT NULL,
+	[Uid] [varchar](40)  NOT NULL,
 	[Data] [text] NULL,
-	[CreatedAt] [datetime] NULL,
-	[UpdatedAt] [datetime] NULL,
+	[Created] [date] NULL,
+	[Updated] [date] NULL,
  CONSTRAINT [PK_spb_Webim_Settings] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -55,8 +55,8 @@ CREATE TABLE [dbo].[spb_Webim_Histories](
 	[Timestamp] [bigint] NULL,
 	[ToDel] [tinyint] NOT NULL CONSTRAINT [DF_spb_Webim_Histories_todel]  DEFAULT ((0)),
 	[FromDel] [tinyint] NOT NULL CONSTRAINT [DF_spb_Webim_Histories_fromdel]  DEFAULT ((0)),
-	[CreatedAt] [datetime] NULL,
-	[UpdatedAt] [datetime] NULL,
+	[Created] [date] NULL,
+	[Updated] [date] NULL,
  CONSTRAINT [PK_spb_Webim_Histories] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC

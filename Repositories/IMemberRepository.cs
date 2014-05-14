@@ -4,7 +4,6 @@
 // </copyright> 
 //------------------------------------------------------------------------------
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,19 +12,26 @@ using Tunynet.Repositories;
 using Tunynet;
 using Tunynet.Common;
 using Tunynet.Caching;
+using Webim;
 
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 群组成员仓储接口
     /// </summary>
-    public interface ISettingRepository : IRepository<SettingEntity>
+    public interface IMemberRepository : IRepository<MemberEntity>
     {
 
-		string Get(string uid);
+        IEnumerable<MemberEntity> AllInRoom(string room);
 
-		void Set(string uid, string data);
+        IEnumerable<RoomEntity> Rooms(string uid);
+
+        void JoinRoom(string room, string uid, string nick);
+
+        void LeaveRoom(string room, string uid);
 
 	}
 
 }
+
+

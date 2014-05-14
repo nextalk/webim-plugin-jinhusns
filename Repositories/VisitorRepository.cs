@@ -4,7 +4,6 @@
 // </copyright> 
 //------------------------------------------------------------------------------
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +16,20 @@ using Tunynet.Caching;
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 访客仓储接口
     /// </summary>
-    public interface ISettingRepository : IRepository<SettingEntity>
+    public class VisitoryRepository : Repository<VisitoryEntity>, IVisitorRepository
     {
+        public VisitorEntity Find(string vid) 
+        {
+            return null;
+        }
 
-		string Get(string uid);
-
-		void Set(string uid, string data);
-
-	}
-
+        IEnumerable<VisitorEntity> FindByIds(IEnumerable<string> vids)
+        {
+            return new List<VisitorEntity>();   
+        }
+    }
 }
+
+

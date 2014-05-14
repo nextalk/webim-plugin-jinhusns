@@ -1,9 +1,9 @@
+
 //------------------------------------------------------------------------------
 // <copyright company="Tunynet">
 //     Copyright (c) Tunynet Inc.  All rights reserved.
 // </copyright> 
 //------------------------------------------------------------------------------
-
 
 using System;
 using System.Collections.Generic;
@@ -13,19 +13,25 @@ using Tunynet.Repositories;
 using Tunynet;
 using Tunynet.Common;
 using Tunynet.Caching;
+using Webim;
 
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 临时讨论组仓储接口
     /// </summary>
-    public interface ISettingRepository : IRepository<SettingEntity>
+    public interface IRoomRepository : IRepository<RoomEntity>
     {
 
-		string Get(string uid);
+        RoomEntity Find(string name);
 
-		void Set(string uid, string data);
+        IEnumerable<RoomEntity> Rooms(string uid);
 
+        IEnumerable<RoomEntity> Rooms(string uid, IEnumerable<string> ids);
+
+        void Remove(string name);
+        
 	}
+
 
 }

@@ -4,7 +4,6 @@
 // </copyright> 
 //------------------------------------------------------------------------------
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +16,17 @@ using Tunynet.Caching;
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 历史消息仓储接口
     /// </summary>
     public interface IHistoryRepository : IRepository<HistoryEntity>
     {
-		IEnumerable<HistoryEntity> GetHistories(long uid, string with, string type="chat", int limit = 30);
-		void ClearHistories(long uid, string with);
+		IEnumerable<HistoryEntity> GetHistories(string uid, string with, string type="chat", int limit = 50);
 
-		IEnumerable<HistoryEntity> GetOfflineMessages(long uid, int limit = 50);
+		void ClearHistories(string uid, string with);
 
-		void OfflineMessageToHistory(long uid);
+		IEnumerable<HistoryEntity> GetOfflineMessages(string uid, int limit = 50);
+
+		void OfflineMessageToHistory(string uid);
 
 	}
 

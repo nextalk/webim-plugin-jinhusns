@@ -12,8 +12,8 @@ CREATE TABLE spb_Webim_Histories (
 	`Timestamp` bigint DEFAULT NULL,
 	`ToDel` tinyint(1) NOT NULL DEFAULT '0',
 	`FromDel` tinyint(1) NOT NULL DEFAULT '0',
-	`CreatedAt` date DEFAULT NULL,
-	`UpdatedAt` date DEFAULT NULL,
+	`Created` date DEFAULT NULL,
+	`Updated` date DEFAULT NULL,
 	PRIMARY KEY (`Id`),
 	KEY `timestamp` (`Timestamp`),
 	KEY `to` (`ToUser`),
@@ -24,10 +24,10 @@ CREATE TABLE spb_Webim_Histories (
 DROP TABLE IF EXISTS spb_Webim_Settings;
 CREATE TABLE spb_Webim_Settings(
 	`Id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-	`Uid` int(11) unsigned NOT NULL,
+	`Uid` varchar(40) NOT NULL,
 	`Data` text,
-	`Created_at` DATETIME DEFAULT NULL,
-	`Updated_at` DATETIME DEFAULT NULL,
+	`Created` DATETIME DEFAULT NULL,
+	`Updated` DATETIME DEFAULT NULL,
 	PRIMARY KEY (`Id`) 
 )ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -40,7 +40,7 @@ CREATE TABLE spb_Webim_Visitors (
       `Url` varchar(100) DEFAULT NULL,
       `Referer` varchar(100) DEFAULT NULL,
       `Location` varchar(100) DEFAULT NULL,
-      `Created_at` datetime DEFAULT NULL,
+      `Created` datetime DEFAULT NULL,
       PRIMARY KEY (`Id`),
       UNIQUE KEY `Webim_visitor_name` (`Name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

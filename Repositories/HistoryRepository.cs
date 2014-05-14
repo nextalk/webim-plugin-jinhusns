@@ -17,7 +17,7 @@ using PetaPoco;
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 历史消息仓储
     /// </summary>
     public class HistoryRepository : Repository<HistoryEntity>, IHistoryRepository
     {

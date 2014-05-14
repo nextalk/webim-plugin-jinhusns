@@ -13,19 +13,21 @@ using Tunynet.Repositories;
 using Tunynet;
 using Tunynet.Common;
 using Tunynet.Caching;
+using Webim;
 
 namespace Spacebuilder.Webim
 {
     /// <summary>
-    /// 群组仓储接口
+    /// 群组屏蔽仓储接口
     /// </summary>
-    public interface ISettingRepository : IRepository<SettingEntity>
+    public interface IBlockedRepository : IRepository<BlockedEntity>
     {
 
-		string Get(string uid);
+        bool IsBlocked(string room, string uid);
 
-		void Set(string uid, string data);
+        void Remove(string room, string uid); 
 
 	}
 
 }
+
