@@ -70,12 +70,6 @@ CREATE NONCLUSTERED INDEX [IX_spb_Webim_Histories_from] ON [dbo].[spb_Webim_Hist
 	[FromUser] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Histories]') AND name = N'IX_spb_Webim_Histories_fromdel')
-CREATE NONCLUSTERED INDEX [IX_spb_Webim_Histories_fromdel] ON [dbo].[spb_Webim_Histories] 
-(
-	[FromDel] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Histories]') AND name = N'IX_spb_Webim_Histories_send')
 CREATE NONCLUSTERED INDEX [IX_spb_Webim_Histories_send] ON [dbo].[spb_Webim_Histories] 
 (
@@ -94,12 +88,68 @@ CREATE NONCLUSTERED INDEX [IX_spb_Webim_Histories_to] ON [dbo].[spb_Webim_Histor
 	[ToUser] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Histories]') AND name = N'IX_spb_Webim_Histories_todel')
-CREATE NONCLUSTERED INDEX [IX_spb_Webim_Histories_todel] ON [dbo].[spb_Webim_Histories] 
-(
-	[ToDel] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-GO
 IF NOT EXISTS (SELECT * FROM ::fn_listextendedproperty(N'MS_Description' , N'SCHEMA',N'dbo', N'TABLE',N'spb_Webim_Histories', N'COLUMN',N'Nick'))
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'from nick' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'spb_Webim_Histories', @level2type=N'COLUMN',@level2name=N'Nick'
 GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Rooms]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[spb_Webim_Rooms](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [Owner] [varchar](40) NOT NULL,
+    [Name] [varchar](40) NOT NULL,
+    [Nick] [varchar](60) NOT NULL,
+    [Topic] [varchar](60) NULL,
+    [Created] [date] NULL,
+    [Updated] [date] NULL,
+ CONSTRAINT [PK_spb_Webim_Rooms] PRIMARY KEY CLUSTERED 
+(
+    [Id] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Members]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[spb_Webim_Members](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [Room] [varchar](40) NULL,
+    [Nick] [varchar](40) NULL,
+    [Uid] [varchar](40) NULL,
+    [Joined] [date] NULL,
+ CONSTRAINT [PK_spb_Webim_Members] PRIMARY KEY CLUSTERED 
+(
+    [Id] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Blocked]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[spb_Webim_Blocked](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [Uid] [varchar](40) NOT NULL,
+    [Room] [varchar](40) NOT NULL,
+    [Blocked] [date] NULL,
+ CONSTRAINT [PK_spb_Webim_Rooms] PRIMARY KEY CLUSTERED 
+(
+    [Id] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spb_Webim_Visitors]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[spb_Webim_Visitors](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [Name] [varchar](60) NOT NULL,
+    [Ipaddr] [varchar](60) NOT NULL,
+    [Url] [varchar](60) NOT NULL,
+    [Referer] [varchar](60) NOT NULL,
+    [Location] [varchar](60) NOT NULL,
+    [Created] [date] NULL,
+ CONSTRAINT [PK_spb_Webim_Visitors] PRIMARY KEY CLUSTERED 
+(
+    [Id] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
