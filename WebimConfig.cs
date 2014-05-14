@@ -46,6 +46,9 @@ namespace Spacebuilder.Webim
             att = xElement.Attribute("port");
             if (att != null)
                 int.TryParse(att.Value, out this.port);
+            att = xElement.Attribute("show_unavailable");
+            if (att != null)
+                this.show_unavailable = bool.Parse(att.Value);
         }
 
         private bool isopen;
@@ -101,6 +104,15 @@ namespace Spacebuilder.Webim
         public int Port
         {
             get { return port; }
+        }
+
+        private bool show_unavailable;
+        /// <summary>
+        /// 是否显示离线
+        /// </summary>
+        public bool ShowUnavailable
+        {
+            get { return show_unavailable; }
         }
 
         /// <summary>

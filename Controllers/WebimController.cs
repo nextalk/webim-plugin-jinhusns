@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Json;
 using Spacebuilder.Webim;
-using Tunynet.Common;
-using Spacebuilder.Common;
-using Spacebuilder.Group;
-using Tunynet.Utilities;
 using System.Configuration;
 using Webim;
 
@@ -18,10 +14,6 @@ namespace Spacebuilder.Webim.Controllers
 {
     public class WebimController : Controller
     {
-
-        //TODO: There should be userService, groupService and FollowService
-
-        private WebimService webimService = new WebimService();
 
         private WebimModel model = null;
 
@@ -38,23 +30,33 @@ namespace Spacebuilder.Webim.Controllers
             this.endpoint = this.plugin.Endpoint();
         }
 
-        private WebimEndpoint CurrentEndpoint()
+        private string CurrentUid()
         {
-            IUser u = UserContext.CurrentUser;
-            return webimService.Mapping(u);
+            return this.endpoint.Id;
         }
+
 
         private WebimClient CurrentClient(string ticket = "")
         {
-            WebimClient c = new WebimClient(
-                CurrentEndpoint(),
-                WebimConfig.Instance().Domain,
-                WebimConfig.Instance().APIkey,
-                WebimConfig.Instance().Host,
-                WebimConfig.Instance().Port);
-            c.Ticket = ticket;
-            return c;
+            if (this.client == null)
+            {
+                this.client = new WebimClient(this.endpoint,
+                    WebimConfig.Instance().Domain,
+                    WebimConfig.Instance().APIkey,
+                    WebimConfig.Instance().Host,
+                    WebimConfig.Instance().Port);
+                this.client.Ticket = ticket;
+            }
+            return this.client;
+
         }
+
+        // GET: /Webim/Index
+        public ActionResult Index()
+        {
+            return View();
+        }
+
 
         // GET: /Webim/Boot
         [HttpGet]
@@ -67,8 +69,8 @@ namespace Spacebuilder.Webim.Controllers
             IUser user = UserContext.CurrentUser;
             string setting = webimService.GetSetting(user.UserId);
             string body = string.Format(@"var _IMC = {{
-	            production_name: 'jinhusns',
-	            version: '1.0',
+	            product: 'jinhusns',
+	            version: '5.4.2',
 	            path: '{0}',
 	            uiPath: '{1}',
 	            is_login: true,
@@ -76,9 +78,10 @@ namespace Spacebuilder.Webim.Controllers
 	            user: '',
 	            setting: {2},
 	            menu: '',
+                discussion: false,
 				enable_room: true,
-				enable_noti: false,
-	            enable_chatlink: '',
+				enable_noti: true,
+	            enable_chatlink: true,
 	            enable_shortcut: '',
 	            enable_menu: 'false',
 	            theme: 'base',
@@ -90,11 +93,11 @@ namespace Spacebuilder.Webim.Controllers
 	            min: """" //window.location.href.indexOf(""webim_debug"") != -1 ? """" : "".min""
             }};
             
-            _IMC.script = window.webim ? '' : ('<link href=""' + _IMC.uiPath + 'static/webim'+ _IMC.min + '.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><link href=""' + _IMC.uiPath + 'static/themes/' + _IMC.theme + '/jquery.ui.theme.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><script src=""' + _IMC.uiPath + 'static/webim' + _IMC.min + '.js?' + _IMC.version + '"" type=""text/javascript""></script><script src=""' + _IMC.uiPath + 'static/i18n/webim-' + _IMC.local + '.js?' + _IMC.version + '"" type=""text/javascript""></script>');
-            _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.' + _IMC.production_name + '.js?' + _IMC.version + '"" type=""text/javascript""></script>';
+            _IMC.script = window.webim ? '' : ('<link href=""' + _IMC.uiPath + 'webim'+ _IMC.min + '.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><link href=""' + _IMC.uiPath + 'themes/' + _IMC.theme + '/jquery.ui.theme.css?' + _IMC.version + '"" media=""all"" type=""text/css"" rel=""stylesheet""/><script src=""' + _IMC.uiPath + 'webim' + _IMC.min + '.js?' + _IMC.version + '"" type=""text/javascript""></script><script src=""' + _IMC.uiPath + 'i18n/webim-' + _IMC.local + '.js?' + _IMC.version + '"" type=""text/javascript""></script>');
+            _IMC.script += '<script src=""' + _IMC.uiPath + 'webim.' + _IMC.product + '.js?' + _IMC.version + '"" type=""text/javascript""></script>';
             document.write( _IMC.script );
 
-            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/UI/"), setting, aspx.ToString().ToLower());
+            ", WebUtility.ResolveUrl("~/Webim/"), WebUtility.ResolveUrl("~/Applications/Webim/static/"), setting, aspx.ToString().ToLower());
 
             return Content(body, "text/javascript");
         }
@@ -107,89 +110,56 @@ namespace Spacebuilder.Webim.Controllers
             IUser user = UserContext.CurrentUser;
             if (user == null)
                 return Json(
-                    new { success = false, error_msg = "尚未登录" },
+                    new { success = false, error = "尚未登录" },
                     JsonRequestBehavior.AllowGet
                 );
 
-            IEnumerable<WebimEndpoint> buddies = webimService.GetBuddies(user.UserId);
-            IEnumerable<WebimGroup> groups = webimService.GetGroups(user.UserId);
+            string uid = CurrentUid();
+            if (Request["show"] != null)
+            {
+                this.endpoint.Show = Request["show"];
+            }
+            IEnumerable<WebimEndpoint> buddies = plugin.Buddies(uid);
+            IEnumerable<WebimRoom> rooms = plugin.Rooms(uid);
             //Forward Online to IM Server
             WebimClient client = CurrentClient();
             var buddyIds = from b in buddies select b.Id;
-            var groupIds = from g in groups select g.Id;
+            var roomIds = from g in rooms select g.Id;
             try
             {
-                JsonObject json = client.Online(buddyIds, groupIds);
-                Debug.WriteLine(json.ToString());
-
-                if (json.ContainsKey("status"))
-                {
-                    return Json(
-                        new { success = false, error_msg = json["message"] },
-                        JsonRequestBehavior.AllowGet
-                    );
-                }
-
-                Dictionary<string, string> conn = new Dictionary<string, string>();
-                conn.Add("ticket", (string)json["ticket"]);
-                conn.Add("domain", client.Domain);
-                conn.Add("jsonpd", (string)json["jsonpd"]);
-                conn.Add("server", (string)json["jsonpd"]);
-                conn.Add("websocket", (string)json["websocket"]);
+                Dictionary<string, object> data = client.Online(buddyIds, roomIds);
 
                 //Update Buddies 
-                JsonObject presenceObj = json["buddies"].ToJsonObject();
-                buddies = buddies.Select(b =>
-                  {
-                      if (presenceObj.ContainsKey(b.Id))
-                      {
-                          b.Presence = "online";
-                          b.Show = (string)presenceObj[b.Id];
-                      }
-                      return b;
-                  });
-
-                //Groups with count
-                JsonObject grpCountObj = json["groups"].ToJsonObject();
-                groups = groups.Select(g =>
-                {
-                    if (grpCountObj.ContainsKey(g.Id))
+                JsonObject presences = (JsonObject)data["presences"];
+                foreach (WebimEndpoint buddy in buddies) {
+                    if (presences.ContainsKey(buddy.Id))
                     {
-                        g.Count = (int)grpCountObj[g.Id];
+                        buddy.Presence = "online";
+                        buddy.Show = (string)presences[buddy.Id];
                     }
-                    return g;
-                });
-                //{"success":true,
-                // "connection":{
-                // "ticket":"fcc493f7a7b17cfadbf4|admin",
-                // "domain":"webim20.cn",
-                // "server":"http:\/\/webim20.cn:8000\/packets"},
-                // "buddies":[
-                //           {"uid":"5","id":"demo","nick":"demo","group":"stranger","url":"home.php?mod=space&uid=5","pic_url":"picurl","status":"","presence":"online","show":"available"}],
-                // "rooms":[],
-                // "server_time":1370751451399.4,
-                // "user":{"uid":"1","id":"admin","nick":"admin","pic_url":"pickurl","show":"available","url":"home.php?mod=space&uid=1","status":""},
-                // "new_messages":[]}
-
-
-                var buddyArray = (from b in buddies select b.Data()).ToArray();
-                var groupArray = (from g in groups select g.Data()).ToArray();
-                return Json(new
+                    else {
+                        buddy.Presence = "offline";
+                        buddy.Show = "unavailable";
+                    }
+                 
+                }
+                if (!WebimConfig.Instance().ShowUnavailable)
                 {
-                    success = true,
-                    connection = conn,
-                    buddies = buddyArray,
-                    groups = groupArray,
-                    rooms = groupArray,
-                    server_time = Timestamp(),
-                    user = client.Endpoint.Data()
-                }, JsonRequestBehavior.AllowGet);
-
+                    buddies = buddies.Where(buddy => buddy.Presence.Equals("online") && !buddy.Show.Equals("invisible"));
+                }
+                var buddyArray = (from b in buddies select b.Data()).ToArray();
+                var roomArray = (from g in rooms select g.Data()).ToArray();
+                data["success"] = true;
+                data["buddies"] = buddyArray;
+                data["rooms"] = roomArray;
+                data["server_time"] = Timestamp();
+                data["user"] = this.endpoint.Data();
+                return Json(data, JsonRequestBehavior.AllowGet);
             }
             catch (Exception e)
             {
                 return Json(
-                    new { success = false, error_msg = e.ToString() },
+                    new { success = false, error= e.ToString() },
                     JsonRequestBehavior.AllowGet
                 );
             }
@@ -209,16 +179,20 @@ namespace Spacebuilder.Webim.Controllers
         [HttpPost]
         public ActionResult Message()
         {
-            IUser user = UserContext.CurrentUser;
+            string uid = CurrentUid();
             WebimClient c = CurrentClient(Request["ticket"]);
             string type = Request["type"];
             string offline = Request["offline"];
             string to = Request["to"];
             string body = Request["body"];
             string style = Request["style"];
-            WebimMessage msg = new WebimMessage(type, to, user.NickName, body, style, Timestamp());
+            if (style == null) { style = ""; }
+            WebimMessage msg = new WebimMessage(type, to, c.Endpoint.Nick, body, style, Timestamp());
+            msg.Offline = offline.Equals("true") ? true : false;
             c.Publish(msg);
-            webimService.InsertHistory(user.UserId, offline, msg);
+            if (body != null && !body.StartsWith("webim-event:")) {
+                model.InsertHistory(uid, msg);
+            }
             return Json("ok");
         }
 
@@ -241,6 +215,7 @@ namespace Spacebuilder.Webim.Controllers
             string to = Request["to"];
             string show = Request["show"];
             string status = Request["status"];
+            if (status == null) { status = ""; }
             WebimStatus s = new WebimStatus(to, show, status);
             c.Publish(s);
             return Json("ok");
@@ -259,9 +234,8 @@ namespace Spacebuilder.Webim.Controllers
         [HttpPost]
         public ActionResult Setting()
         {
-            IUser user = UserContext.CurrentUser;
             string data = Request["data"];
-            webimService.updateSetting(user.UserId, data);
+            model.SaveSetting(CurrentUid(), data);
             return Json("ok");
         }
 
@@ -269,31 +243,31 @@ namespace Spacebuilder.Webim.Controllers
         [HttpGet]
         public ActionResult History()
         {
-            IUser u = UserContext.CurrentUser;
+            string uid = CurrentUid();
             string id = Request["id"];
             string type = Request["type"];
-            IEnumerable<HistoryEntity> histories = webimService.GetHistories(u.UserId, id, type);
-            var list = from e in histories select webimService.mapping(e);
+            IEnumerable<WebimHistory> histories = model.Histories(uid, id, type);
+            var list = from h in histories select h.Data();
             return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
         }
 
         //POST: /Webim/ClearHistory
         public ActionResult ClearHistory()
         {
+            string uid = CurrentUid();
             string id = Request["id"];
-            webimService.ClearHistories(id);
+            model.ClearHistories(uid, id);
             return Json("ok");
-
         }
 
         //GET: /Webim/DownloadHistory
         [HttpGet]
         public ActionResult DownloadHistory()
         {
-            IUser u = UserContext.CurrentUser;
+            string uid = CurrentUid();
             string id = Request["id"];
             string type = Request["type"];
-            IEnumerable<HistoryEntity> histories = webimService.GetHistories(u.UserId, id, type);
+            IEnumerable<WebimHistory> histories = model.Histories(uid, id, type);
             return View(histories);
         }
 
@@ -302,20 +276,39 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult Members()
         {
             WebimClient c = CurrentClient(Request["ticket"]);
-            string gid = Request["id"];
-            JsonArray members = c.Members(gid);
-            return Json(members);
-            /*
-            List<Dictionary<string,string>> list = new List<Dictionary<string,string>>();
-            foreach (JsonObject m in (JsonArray)obj[gid])
-            { 
-                Dictionary<string,string> data = new Dictionary<string,string>();
-                data["id"] = (string)m["id"];
-                data["nick"] = (string)m["nick"];
-                list.Add(data);
+            string roomId = Request["id"];
+            WebimRoom room = this.plugin.findRoom(roomId);
+            IEnumerable<WebimMember> members = null;
+            if (room != null)
+            {
+                members = plugin.Members(roomId);
             }
-            return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
-            */
+            else
+            {
+                room = model.FindRoom(roomId);
+                if (room != null)
+                {
+                    members = model.Members(roomId);
+                }
+            }
+            if (room == null)
+            {
+                return null;
+            }
+            JsonObject presences = c.Members(roomId);
+            foreach (WebimMember member in members) {
+                if (presences.ContainsKey(member.Id))
+                {
+                    member.Presence = "online";
+                    member.Show = (string)presences[member.Id];
+                }
+                else {
+                    member.Presence = "offline";
+                    member.Show = "unavailable";
+                }
+            }
+            var data = from m in members select m.Data();
+            return Json(data.ToArray(), JsonRequestBehavior.AllowGet);
         }
 
         //POST: /Webim/Join
@@ -323,9 +316,16 @@ namespace Spacebuilder.Webim.Controllers
         public ActionResult Join()
         {
             WebimClient c = CurrentClient(Request["ticket"]);
-            string gid = Request["id"];
-            JsonObject o = c.Join(gid);
-            return Content(o.ToString(), "text/json");
+            string id = Request["id"];
+            WebimRoom room = plugin.FindRoom(id);
+            if(room == null) {
+                room = model.FindRoom(id);
+            }
+            if(room != null) { 
+                c.Join(id);
+                return Json(room.Data(), JsonRequestBehavior.AllowGet);
+            }
+            return null;
         }
 
         //POST: /Webim/Leave
@@ -338,14 +338,12 @@ namespace Spacebuilder.Webim.Controllers
         }
 
         //GET: /Webim/Buddies
+        //TODO: SECURITY BUGS!!!
         [HttpGet]
         public ActionResult Buddies()
         {
-            IUser u = UserContext.CurrentUser;
-            IEnumerable<long> ids = (from id in
-                                         Request["ids"].Split(new char[1] { ',' })
-                                     select long.Parse(id));
-            IEnumerable<WebimEndpoint> buddies = webimService.GetBuddiesByIds(ids);
+            string[] ids = Request["ids"].Split(new char[1] { ',' });                 
+            IEnumerable<WebimEndpoint> buddies = plugin.BuddiesByIds(CurrentUid(), ids);
             var list = from buddy in buddies select buddy.Data();
             return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
         }
@@ -354,14 +352,16 @@ namespace Spacebuilder.Webim.Controllers
         [HttpGet]
         public ActionResult Notifications()
         {
-            return Json(webimService.GetNotifications(), JsonRequestBehavior.AllowGet);
+            var list = from n in plugin.Notifications(CurrentUid()) select n.Data();
+            return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
         }
 
-        //GET: /Webim/Menus
+        //GET: /Webim/Menu
         [HttpGet]
-        public ActionResult Menus()
+        public ActionResult Menu()
         {
-            return Json(webimService.GetMenuList(), JsonRequestBehavior.AllowGet);
+            var list = from m in plugin.Menu(CurrentUid()) select m.Data();
+            return Json(list.ToArray(), JsonRequestBehavior.AllowGet);
         }
 
         private double Timestamp()
