@@ -2291,9 +2291,6 @@ model("history", {
 		} );
 	}
 } );
-
-
-
 })(window, document);
 /*!
  * Webim UI v5.4 
@@ -6811,72 +6808,4 @@ widget("notification",{
 	destroy: function(){
 	}
 });
-
-function RoomorUI(element, webim, options) {
-	var self = this;
-    self.im = webim;
-	self.element = element;
-	self.options = extend({}, RoomorUI.defaults, options);
-	self._init();
-}
-
-ClassEvent.on( RoomorUI );
-
-extend(RoomorUI.prototype, {
-
-    _init: function(){
-        //模型
-        var self = this, im = self.im, buddy = im.buddy;
-
-        //上线、下线回调
-        im.bind("beforeOnline",function(){
-            
-        });
-        im.bind("online",function(e, data){
-            //handle online event
-            alert(data);
-        });
-        im.bind("offline", function(e, type, msg){
-            alert("offline");
-        });
-
-        //接收到消息
-        
-        im.bind("message", function(e, data){
-
-        });
-
-        //好友回调
-        buddy.bind("online", function(e, data){
-            //好友上线
-        }); 
-        buddy.bind("offline", function(e, data){
-            //好友下线
-        }); 
-        buddy.bind("update", function(e, data){
-            //好友更新
-        });
-
-		//聊天室成员回调
-		room.bind("memberAdded", function(e, room_id, info){
-            //成员加入
-		}).bind("memberRemoved", function(e, room_id, info){
-            //成员离开
-		}).bind("updated", function(e, data){ //room data
-            //成员更新
-        });
-    },
-
-	render:function(){
-        //渲染界面，创建基本html界面 
-    },
-};
-
-extend(RoomorUI, {
-	version: "@VERSION",
-	defaults: {},
-});
-
-webim.roomorUI = RoomorUI;
-
 })(window, document);

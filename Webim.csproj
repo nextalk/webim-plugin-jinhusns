@@ -46,7 +46,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\SPB\packages\Autofac.3.0.2\lib\net40\Autofac.dll</HintPath>
+      <HintPath>..\packages\Autofac.3.0.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -108,7 +108,7 @@
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="Tunynet.Infrastructure">
-      <HintPath>..\SPB\packages\Tunynet.Infrastructure.2.0.0\lib\net40\Tunynet.Infrastructure.dll</HintPath>
+      <HintPath>..\packages\Tunynet.Infrastructure.2.0.0\lib\net40\Tunynet.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Webim">
       <HintPath>packages\Webim.dll</HintPath>
@@ -168,15 +168,15 @@
     <Content Include="Views\Shared\Error.aspx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SPB\BusinessComponents\BusinessComponents.csproj">
+    <ProjectReference Include="..\BusinessComponents\BusinessComponents.csproj">
       <Project>{D9BC9674-69DE-4742-AF24-E35C43DE84CE}</Project>
       <Name>BusinessComponents</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SPB\Common\Common.csproj">
+    <ProjectReference Include="..\Common\Common.csproj">
       <Project>{4FE558F7-2E94-49C3-8A8A-50F52FBFBBC6}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SPB\Web\Applications\Group\Group.csproj">
+    <ProjectReference Include="..\Web\Applications\Group\Group.csproj">
       <Project>{2C7B182F-8ACC-4890-ACA7-532F8546FFB5}</Project>
       <Name>Group</Name>
     </ProjectReference>
@@ -194,7 +194,6 @@
     <Content Include="Views\Webim\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Application.Config">
       <SubType>Designer</SubType>
     </Content>

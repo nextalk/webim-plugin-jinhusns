@@ -195,7 +195,7 @@ namespace Spacebuilder.Webim
             WebimEndpoint ep = new WebimEndpoint(
                 u.UserId.ToString(),
                 u.NickName);
-            ep.PicUrl = SiteUrls.Instance().UserAvatarUrl(u, AvatarSizeType.Small);
+            ep.Avatar = SiteUrls.Instance().UserAvatarUrl(u, AvatarSizeType.Small);
             ep.Show = "available";
             ep.Url = SiteUrls.Instance().SpaceHome(u.UserId);
             ep.Status = "";
@@ -207,7 +207,7 @@ namespace Spacebuilder.Webim
             string gid = e.GroupId.ToString();
             WebimRoom room = new WebimRoom(gid, e.GroupName);
             room.AllCount = e.MemberCount;
-            room.PicUrl = SiteUrls.Instance().LogoUrl(e.Logo, TenantTypeIds.Instance().Group(), ImageSizeTypeKeys.Instance().Small());
+            room.Avatar = SiteUrls.Instance().LogoUrl(e.Logo, TenantTypeIds.Instance().Group(), ImageSizeTypeKeys.Instance().Small());
             room.Url = SiteUrls.Instance().GroupHome(e.GroupId);
             return room;
         }
