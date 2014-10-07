@@ -28,6 +28,7 @@ webim.ui.i18n.store('zh-TW',{
 	"close":"\u95dc\u9589",
 	"minimize":"\u6700\u5c0f\u5316",
 	"maximize":"\u6700\u5927\u5316",
+    "detach": "\u79fb\u52d5",
 	"restore":"\u9084\u539f",
 	"setting":"\u8a2d\u7f6e",
 	"notification":"\u901a\u77e5",
@@ -47,8 +48,10 @@ webim.ui.i18n.store('zh-TW',{
 	"buddy offline notice": "{{name}}\u5df2\u96e2\u7dda\uff0c\u60a8\u6240\u767c\u9001\u7684\u6d88\u606f{{name}}\u5c07\u5728\u4e0b\u6b21\u767b\u9304\u6642\u6536\u5230",
 	"input notice": "\u9019\u88cf\u8f38\u5165\u6d88\u606f\uff0cEnter\u9375\u767c\u9001",
 	"clear history notice": "\u804a\u5929\u6b77\u53f2\u8a18\u9304\u5df2\u6e05\u9664",
-    "user leaved notice": "{{name}}\u5df2\u96e2\u7dda\u6216\u9000\u51fa\u7fa4\u804a",
-    "user joined notice": "{{name}}\u52a0\u5165\u7fa4\u804a",
+    "user leaved notice": "{{name}}\u5df2\u9000\u51fa\u7fa4\u7d44",
+    "user joined notice": "{{name}}\u52a0\u5165\u7fa4\u7d44",
+    "member online notice": "{{name}}\u4e0a\u7dda",
+    "member offline notice": "{{name}}\u5df2\u4e0b\u7dda",
 	"typing":" \u6b63\u5728\u8f38\u5165...",
 	"inputing":" \u6b63\u5728\u8f38\u5165...",
 	"chat with":"\u548c{{name}}\u804a\u5929",
@@ -107,7 +110,15 @@ webim.ui.i18n.store('zh-TW',{
 	"invite": "\u9080\u8bf7",
 	"visitor":"\u8a2a\u5ba2",
 	"manager":"\u7ba1\u7406\u54e1",
-	"exit": "\u9000\u51fa"
+	"exit": "\u9000\u51fa",
+    "Exit Room": "\u78ba\u5b9a\u8981\u9000\u51fa'{{name}}'\u8a0e\u8ad6\u7d44\u55ce?",
+    "ask app": "\u597d\u53cb\u9a8c\u8bc1",
+    "accept": "\u63a5\u53d7",
+    "reject": "\u62d2\u7d55",
+    "Remove Buddy": "\u786e\u5b9a\u8981\u522a\u9664\u597d\u53cb{{name}}\u55ce?",
+    "Ask Initiate": "{{name}}\u8acb\u6c42\u52a0\u60a8\u70ba\u597d\u53cb({{time}})",
+    "Ask Accepted": "{{name}}\u5df2\u63a5\u53d7\u60a8\u7684\u597d\u53cb\u8acb\u6c42({{time}})",
+    "Ask Rejected": "{{name}}\u62d2\u7d55\u4e86\u60a8\u7684\u597d\u53cb\u8acb\u6c42({{time}})"
 });
 
 webim.ui.i18n.store('zh-TW',{

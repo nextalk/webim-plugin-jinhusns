@@ -5,8 +5,8 @@
  * Copyright (c) 2013 Arron
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Fri Apr 18 16:33:45 2014 +0800
- * Commit: f624aa19f33d55e469361fbc5615a7d8e6f99c88
+ * Date: Tue Sep 2 10:40:16 2014 +0800
+ * Commit: 7a4a48d393cabc892c637b7336860e00df786654
  */
 
 body {
@@ -459,12 +459,13 @@ a .webim-icon, a .ui-icon{
 		top: .4em;
 		position:absolute;
 }
+/*Notice: adjust width of chat window here*/
 .webim-layout .webim-window-window {
         position: absolute;
         bottom: 2.20em;
         z-index: 5;
         right: 0;
-        width: 20em;
+        width: 24em; /*20em*/
 }
 
 .webim-layout .webim-window-content {
@@ -487,7 +488,7 @@ a .webim-icon, a .ui-icon{
         margin: 0 .1em;
 }
 .webim-layout .webim-window-header h4{
-        margin: 0;
+        margin: 0 0 0 24px;
         text-align: center;
         font-weight:normal;
         background:url(about:blank);/*events http://ued.koubei.com/?p=394*/
@@ -519,6 +520,10 @@ a .webim-icon, a .ui-icon{
         width: 19.7em;
 }
 
+/*Notice: adjust width of chat window here*/
+.webim-layout .webim-panels .webim-window-normal .webim-window-tab {
+    width: 23.85em !important; /*19.85em*/
+}
 
 .webim-layout .webim-buddy-window .webim-window-tab{
         width: 16em;
@@ -676,12 +681,12 @@ a .webim-icon, a .ui-icon{
 }
 
 .webim .webim-chat-content{
-	height: 16em;
+	height: 20em;
 	position: relative;
 }
 
 .webim .webim-chat-main{
-	height: 16em; 
+	height: 20em; 
 	overflow-y: auto;
 	overflow-x: hidden;
 	*background: url(about:blank);
@@ -712,7 +717,7 @@ a .webim-icon, a .ui-icon{
 	background: transparent;
 	overflow: auto;
 	width: 100%;
-	height: 3em;
+	height: 2em;
 	padding: .3em 0 .2em;
 }
 .webim .webim-chat .webim-chat-notice{
@@ -752,25 +757,25 @@ a .webim-icon, a .ui-icon{
 
 .webim .webim-member{
 	margin-top:  -1px;
-	height: 16em;
-	width: 7em;
-	left: -7.2em;
+	height: 20em; /*16em*/
+	width: 8em;
+	left: -8.2em;
 	position: absolute;
 }
 
 .webim .webim-chat .webim-member .webim-bgiframe{
 	top: -.1em;
 	left: -.1em;
-	width: 7.2em;
-	height: 16.2em;
+	width: 8.2em;
+	height: 20.2em;
 }
 .webim .webim-member h4{
 	height: 1.5em;
 	padding: .2em .3em 0;
 }
 .webim .webim-member ul{
-	height: 14.3em;
-	width: 7em;
+	height: 18.3em;
+	width: 8em;
 	position: absolute;
 	overflow-y:auto;
 	overflow-x:hidden;
@@ -1342,137 +1347,3 @@ a .webim-icon, a .ui-icon{
         overflow: hidden;
         padding:.1em 0;
 }
-
-* html  .webim-popup, .webim-popup{
-	position: static; 
-	bottom: auto;
-	right: auto;
-	left: auto;
-	top:auto;
-	-webkit-box-shadow:none;
-	-moz-box-shadow:none;
-	box-shadow:none;
-	margin-left: 220px;
-}
-
-.webim-popup .webim-widgets{
-	float: none;
-	background: none;
-	margin-top: -1px;
-}
-
-.webim-popup .webim-widgets
-, .webim-popup .webim-layout-bg{
-	height: 26px;
-}
-
-.webim-popup .webim-window-normal .webim-window-tab{
-	border-width: 0;
-	border-right-width: 1px;
-	padding-bottom: 1px;
-}
-
-.webim-popup .webim-window-header h4{
-	margin: 3px 0;
-}
-
-.webim-popup .webim-window-window{
-	position: relative;
-	bottom: auto;
-	z-index: 5;
-	right: auto;
-	width: 100%;
-}
-
-.webim-popup-left{
-	width: 200px;
-	margin-left: -220px;
-	float: left;
-}
-
-.webim-popup .webim-popup-left .webim-window-content{
-	height: 350px;
-}
-
-.webim-popup .webim-chat-input{
-	height: 6em;
-}
-.webim-popup .webim-chat-input-wrap{
-	height: 80px;
-}
-
-.webim-popup .webim-chat-main
-, .webim-popup .webim-chat-content
-, .webim-popup .webim-member{
-	height: 319px;
-}
-
-.webim-popup-right{
-}
-
-.webim-popup .webim-window{
-	float: none;
-}
-
-.webim-popup .webim-window-tab-wrap {
-	display: none;
-}
-
-.webim-popup .webim-widgets .webim-window-tab-wrap {
-	display: block;
-}
-
-.webim-popup .webim-chat{
-}
-
-
-.webim-popup .webim-chat-sidebar {
-	right: 0;
-}
-
-.webim-popup .webim-member{
-	left: 0em;
-	-moz-border-radius-topleft: 0; -webkit-border-top-left-radius: 0; border-top-left-radius: 0; -moz-border-radius-bottomleft: 0; -webkit-border-bottom-left-radius: 0; border-bottom-left-radius: 0;
-	-moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; border-top-right-radius: 4px; -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; border-bottom-right-radius: 4px;
-}
-
-.webim-popup #webim-buddy.webim-buddy-scroll .webim-buddy-content{
-	/* height: 25em; */
-	height: 24em;
-}
-
-.webim-popup #webim-room.webim-room-scroll .webim-room-content {
-	height: 24em;
-}
-
-.webim-popup #webim-buddy .webim-buddy-content{
-        padding: .2em 0 1.5em;
-}
-
-.webim-popup #webim-buddy.webim-buddy-simple ul li a span{
-	display: block;
-}
-
-.webim-popup .webim-chat .webim-chat-notice-wrap1{
-	position: relative;
-	z-index: 3;
-}
-
-.webim-popup .webim-chat .webim-chat-notice-wrap{
-	position: absolute;
-	width: 100%;
-}
-
-/*user icon*/
-/*
-.webim-popup .webim-user-show-dnd,.webim-popup  .webim-user-show-away,.webim-popup  .webim-user-show-invisible{
-	display: none !important;
-}
- */
-
-.webim-popup .webim-window-window {
-	/*-moz-box-shadow:0 20px 40px rgba(0, 0, 0, 0.4);*/
-	-moz-box-shadow:0 10px 20px rgba(0, 0, 0, 0.4);
-	-webkit-box-shadow:0 10px 20px rgba(0, 0, 0, 0.4);
-}
-
