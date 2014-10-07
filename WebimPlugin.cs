@@ -51,7 +51,7 @@ namespace Spacebuilder.Webim
          *  id:         uid
          *  uid:        uid
          *  nick:       nick
-         *  pic_url:    url of photo
+         *  avatar:    url of photo
          *  presence:   online | offline
          *  show:       available | unavailable | away | busy | hidden
          *  url:        url of home page of buddy
@@ -111,7 +111,7 @@ namespace Spacebuilder.Webim
          *  id:         Room ID,
          *  nick:       Room Nick
          *  url:        Home page of room
-         *  pic_url:    Pic of Room
+         *  avatar:     Pic of Room
          *  status:     Room status
          *  count:      count of online members
          *  all_count:  count of all members
